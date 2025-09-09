@@ -21,54 +21,35 @@ const faceColors = {
   none: COLORS.black,
 };
 
-type FaceMaterials = Record<keyof typeof faceColors, THREE.MeshLambertMaterial>;
-const generateFaceMaterials = () => {
-  return Object.keys(faceColors).reduce((acc, face) => {
-    const faceKey = face as keyof typeof faceColors;
-    acc[faceKey] = new THREE.MeshLambertMaterial({
-      color: faceColors[faceKey],
-    });
-    return acc;
-  }, {} as FaceMaterials);
-};
-
-const getCubeletFaces = (
-  x: number,
-  y: number,
-  z: number,
-  faceMaterials: FaceMaterials
-) => {
+const getCubeletFaces = (x: number, y: number, z: number) => {
   // right, left, top, bottom, front, back
-  const faces = Array(6).fill(faceMaterials.none);
+  const faces = Array(6).fill(
+    new THREE.MeshLambertMaterial({ color: faceColors.none })
+  );
 
   if (x === 1) {
-    faces[0] = faceMaterials.right;
+    faces[0] = new THREE.MeshLambertMaterial({ color: faceColors.right });
   } else if (x === -1) {
-    faces[1] = faceMaterials.left;
+    faces[1] = new THREE.MeshLambertMaterial({ color: faceColors.left });
   }
 
   if (y === 1) {
-    faces[2] = faceMaterials.top;
+    faces[2] = new THREE.MeshLambertMaterial({ color: faceColors.top });
   } else if (y === -1) {
-    faces[3] = faceMaterials.bottom;
+    faces[3] = new THREE.MeshLambertMaterial({ color: faceColors.bottom });
   }
 
   if (z === 1) {
-    faces[4] = faceMaterials.front;
+    faces[4] = new THREE.MeshLambertMaterial({ color: faceColors.front });
   } else if (z === -1) {
-    faces[5] = faceMaterials.back;
+    faces[5] = new THREE.MeshLambertMaterial({ color: faceColors.back });
   }
 
   return faces;
 };
 
-const createCubelet = (
-  x: number,
-  y: number,
-  z: number,
-  faceMaterials: FaceMaterials
-) => {
-  const faces = getCubeletFaces(x, y, z, faceMaterials);
+const createCubelet = (x: number, y: number, z: number) => {
+  const faces = getCubeletFaces(x, y, z);
   const geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
   const cube = new THREE.Mesh(geometry, faces);
 
@@ -86,12 +67,11 @@ const createCubelet = (
 
 export const drawCube = (scene: THREE.Scene) => {
   const cubeGroup = new THREE.Group();
-  const faceMaterials = generateFaceMaterials();
   const cubelets: THREE.Mesh[] = [];
   const faceNormals: { key: string; normal: THREE.Group }[] = [];
 
   cubeCoordinates.forEach(([x, y, z]) => {
-    const cubelet = createCubelet(x, y, z, faceMaterials);
+    const cubelet = createCubelet(x, y, z);
     cubelets.push(cubelet);
     cubeGroup.add(cubelet);
   });
@@ -111,4 +91,54 @@ export const drawCube = (scene: THREE.Scene) => {
   scene.add(cubeGroup);
 
   return { cubelets, cubeGroup, faceNormals };
+};
+
+const getNormalColor = (color: number) => {
+  if (color === COLORS.rubik_highlightwhite) return COLORS.rubik_white;
+  if (color === COLORS.rubik_highlightred) return COLORS.rubik_red;
+  if (color === COLORS.rubik_highlightgreen) return COLORS.rubik_green;
+  if (color === COLORS.rubik_highlightblue) return COLORS.rubik_blue;
+  if (color === COLORS.rubik_highlightorange) return COLORS.rubik_orange;
+  if (color === COLORS.rubik_highlightyellow) return COLORS.rubik_yellow;
+
+  return color;
+};
+
+const getHighlightColor = (color: number) => {
+  if (color === COLORS.rubik_white) return COLORS.rubik_highlightwhite;
+  if (color === COLORS.rubik_red) return COLORS.rubik_highlightred;
+  if (color === COLORS.rubik_green) return COLORS.rubik_highlightgreen;
+  if (color === COLORS.rubik_blue) return COLORS.rubik_highlightblue;
+  if (color === COLORS.rubik_orange) return COLORS.rubik_highlightorange;
+  if (color === COLORS.rubik_yellow) return COLORS.rubik_highlightyellow;
+
+  return color;
+};
+
+export const highlightCubelet = (cubelet: THREE.Mesh) => {
+  const cubeletMaterials = cubelet.material;
+  console.log(cubeletMaterials);
+
+  if (!Array.isArray(cubeletMaterials)) return;
+
+  cubeletMaterials.forEach((material) => {
+    const cubeletMaterial = material as THREE.MeshLambertMaterial;
+    cubeletMaterial.color.set(
+      getHighlightColor(cubeletMaterial.color.getHex())
+    );
+    cubeletMaterial.needsUpdate = true;
+  });
+};
+
+export const removeHighlights = (cubelets: THREE.Mesh[]) => {
+  cubelets.forEach((cubelet) => {
+    const cubeletMaterials = cubelet.material;
+    if (!Array.isArray(cubeletMaterials)) return;
+
+    cubeletMaterials.forEach((material) => {
+      const cubeletMaterial = material as THREE.MeshLambertMaterial;
+      cubeletMaterial.color.set(getNormalColor(cubeletMaterial.color.getHex()));
+      cubeletMaterial.needsUpdate = true;
+    });
+  });
 };

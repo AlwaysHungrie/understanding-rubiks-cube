@@ -1,7 +1,7 @@
 "use client";
 
 import { INITIAL_CUBE_ROTATION, SCENE_CLICKABLE_TYPES } from "@/lib/constants";
-import { drawCube } from "@/lib/scene/cube";
+import { drawCube, highlightCubelet, removeHighlights } from "@/lib/scene/cube";
 import { drawFloor } from "@/lib/scene/floor";
 import { setupScene } from "@/lib/scene/setup";
 import { rotateObjectToTarget } from "@/lib/threejsHelpers/accelerationHelper";
@@ -153,5 +153,16 @@ export default function Home() {
     };
   }, [initScene, handleMouseDown, handleMouseMove, handleMouseUp]);
 
-  return <div ref={sceneContainerRef} />;
+  return (
+    <div ref={sceneContainerRef}>
+      <div className="absolute top-0 left-0">
+        <button
+          onMouseEnter={() => highlightCubelet(cubeletsRef.current[0])}
+          onMouseLeave={() => removeHighlights(cubeletsRef.current)}
+        >
+          Highlight Cubelet
+        </button>
+      </div>
+    </div>
+  );
 }

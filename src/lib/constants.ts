@@ -14,6 +14,13 @@ export const COLORS = {
   rubik_blue: 0x0051ba,
   rubik_orange: 0xff5800,
   rubik_yellow: 0xffd500,
+
+  rubik_highlightwhite: 0xf0f0f0,
+  rubik_highlightred: 0x780116,
+  rubik_highlightgreen: 0x15803d,
+  rubik_highlightblue: 0x0033a0,
+  rubik_highlightorange: 0xff8833,
+  rubik_highlightyellow: 0xff9000,
 };
 
 export const SCENE_CLICKABLE_TYPES = ["floorButton"];
