@@ -1,10 +1,15 @@
 import * as THREE from "three";
 
 import { COLORS, CUBE_SIZE, CUBE_SPACING } from "../constants";
+import { drawLine } from "../threejsHelpers/line";
+import { coordinatesToKey } from "../threejsHelpers/helpers";
 
 const coordinates = [-1, 0, 1];
 const cubeCoordinates = coordinates.flatMap((x) =>
   coordinates.flatMap((y) => coordinates.map((z) => [x, y, z]))
+);
+export const faceNormalCoordinates = cubeCoordinates.filter(
+  ([x, y, z]) => Math.abs(x) + Math.abs(y) + Math.abs(z) === 1
 );
 const faceColors = {
   front: COLORS.rubik_blue,
@@ -83,6 +88,7 @@ export const drawCube = (scene: THREE.Scene) => {
   const cubeGroup = new THREE.Group();
   const faceMaterials = generateFaceMaterials();
   const cubelets: THREE.Mesh[] = [];
+  const faceNormals: { key: string; normal: THREE.Group }[] = [];
 
   cubeCoordinates.forEach(([x, y, z]) => {
     const cubelet = createCubelet(x, y, z, faceMaterials);
@@ -90,8 +96,19 @@ export const drawCube = (scene: THREE.Scene) => {
     cubeGroup.add(cubelet);
   });
 
+  const axisLength = 3.5;
+  faceNormalCoordinates.forEach(([x, y, z]) => {
+    const line = drawLine({
+      x: x * axisLength,
+      y: y * axisLength,
+      z: z * axisLength,
+    });
+    faceNormals.push({ key: coordinatesToKey([x, y, z]), normal: line });
+    cubeGroup.add(line);
+  });
+
   cubeGroup.rotation.y = Math.PI / 4;
   scene.add(cubeGroup);
 
-  return { cubelets, cubeGroup };
+  return { cubelets, cubeGroup, faceNormals };
 };

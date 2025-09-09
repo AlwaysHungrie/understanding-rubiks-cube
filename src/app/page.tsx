@@ -1,17 +1,12 @@
 "use client";
 
-import {
-  ACCELERATION_FACTOR,
-  DAMPING_FACTOR,
-  INITIAL_CUBE_ROTATION,
-  MAX_VELOCITY,
-  SCENE_CLICKABLE_TYPES,
-} from "@/lib/constants";
+import { INITIAL_CUBE_ROTATION, SCENE_CLICKABLE_TYPES } from "@/lib/constants";
 import { drawCube } from "@/lib/scene/cube";
 import { drawFloor } from "@/lib/scene/floor";
 import { setupScene } from "@/lib/scene/setup";
 import { rotateObjectToTarget } from "@/lib/threejsHelpers/accelerationHelper";
 import { checkObjectClick } from "@/lib/threejsHelpers/clickHelper";
+import { findPrimaryNormals } from "@/lib/threejsHelpers/line";
 import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 
@@ -24,6 +19,7 @@ export default function Home() {
 
   const cubeRef = useRef<THREE.Group>(null);
   const cubeletsRef = useRef<THREE.Mesh[]>([]);
+  const faceNormalsRef = useRef<{ key: string; normal: THREE.Group }[]>([]);
 
   const isDraggingRef = useRef(false);
   const previousMousePositionRef = useRef({ x: 0, y: 0 });
@@ -51,6 +47,7 @@ export default function Home() {
 
       if (finalVelocity.x === 0 && finalVelocity.y === 0) {
         isCubeAnimatingRef.current = false;
+        findPrimaryNormals(faceNormalsRef.current, cube);
       }
       cubeVelocityRef.current = finalVelocity;
     }
@@ -103,7 +100,10 @@ export default function Home() {
 
   const handleMouseUp = useCallback((event: MouseEvent) => {
     if (isCubeAnimatingRef.current) return;
+    if (!faceNormalsRef.current || !cubeRef.current) return;
+
     isDraggingRef.current = false;
+
     // Check for 3D object clicks using raycasting
     if (sceneRef.current && cameraRef.current && rendererRef.current) {
       checkObjectClick(
@@ -114,6 +114,8 @@ export default function Home() {
         SCENE_CLICKABLE_TYPES
       );
     }
+
+    findPrimaryNormals(faceNormalsRef.current, cubeRef.current);
   }, []);
 
   const initScene = useCallback(() => {
@@ -126,9 +128,11 @@ export default function Home() {
     rendererRef.current = renderer;
 
     drawFloor(scene, resetCube);
-    const { cubelets, cubeGroup } = drawCube(scene);
+    const { cubelets, cubeGroup, faceNormals } = drawCube(scene);
     cubeletsRef.current = cubelets;
     cubeRef.current = cubeGroup;
+    faceNormalsRef.current = faceNormals;
+    findPrimaryNormals(faceNormalsRef.current, cubeRef.current);
 
     return renderer;
   }, [animate, resetCube, handleMouseDown, handleMouseMove, handleMouseUp]);
