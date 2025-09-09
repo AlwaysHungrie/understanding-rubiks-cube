@@ -19,3 +19,12 @@ export const SCENE_CLICKABLE_TYPES = ["floorButton"];
 
 export const CUBE_SIZE = 1.5;
 export const CUBE_SPACING = 0.05;
+
+export const INITIAL_CUBE_ROTATION = {
+  x: 0,
+  y: Math.PI / 4,
+};
+
+export const DAMPING_FACTOR = 0.8;
+export const MAX_VELOCITY = 0.1;
+export const ACCELERATION_FACTOR = 0.02;

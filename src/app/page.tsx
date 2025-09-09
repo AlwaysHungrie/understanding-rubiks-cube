@@ -1,9 +1,16 @@
 "use client";
 
-import { SCENE_CLICKABLE_TYPES } from "@/lib/constants";
+import {
+  ACCELERATION_FACTOR,
+  DAMPING_FACTOR,
+  INITIAL_CUBE_ROTATION,
+  MAX_VELOCITY,
+  SCENE_CLICKABLE_TYPES,
+} from "@/lib/constants";
 import { drawCube } from "@/lib/scene/cube";
 import { drawFloor } from "@/lib/scene/floor";
 import { setupScene } from "@/lib/scene/setup";
+import { rotateObjectToTarget } from "@/lib/threejsHelpers/accelerationHelper";
 import { checkObjectClick } from "@/lib/threejsHelpers/clickHelper";
 import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
@@ -21,6 +28,10 @@ export default function Home() {
   const isDraggingRef = useRef(false);
   const previousMousePositionRef = useRef({ x: 0, y: 0 });
 
+  // for reseting cube to original position
+  const isCubeAnimatingRef = useRef(false);
+  const cubeVelocityRef = useRef({ x: 0, y: 0 });
+
   const animate = useCallback(() => {
     if (!rendererRef.current) return;
     if (!sceneRef.current) return;
@@ -30,15 +41,37 @@ export default function Home() {
     const scene = sceneRef.current;
     const camera = cameraRef.current;
 
+    const cube = cubeRef.current;
+    if (isCubeAnimatingRef.current && cube) {
+      const finalVelocity = rotateObjectToTarget(
+        cube,
+        INITIAL_CUBE_ROTATION,
+        cubeVelocityRef.current
+      );
+
+      if (finalVelocity.x === 0 && finalVelocity.y === 0) {
+        isCubeAnimatingRef.current = false;
+      }
+      cubeVelocityRef.current = finalVelocity;
+    }
+
     renderer.render(scene, camera);
   }, [sceneRef, cameraRef, rendererRef]);
 
   const resetCube = useCallback(() => {
+    isCubeAnimatingRef.current = true;
+    cubeVelocityRef.current = { x: 0, y: 0 };
+
+    // reset dragging
+    isDraggingRef.current = false;
+    previousMousePositionRef.current = { x: 0, y: 0 };
+
     console.log("resetCube");
   }, []);
 
   // Mouse handlers
   const handleMouseDown = useCallback((event: MouseEvent) => {
+    if (isCubeAnimatingRef.current) return;
     isDraggingRef.current = true;
     previousMousePositionRef.current = {
       x: event.clientX,
@@ -47,18 +80,19 @@ export default function Home() {
   }, []);
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
+    if (isCubeAnimatingRef.current) return;
     if (!isDraggingRef.current || !cubeRef.current) return;
 
     const deltaX = event.clientX - previousMousePositionRef.current.x;
     const deltaY = event.clientY - previousMousePositionRef.current.y;
 
     const cube = cubeRef.current;
-    const maximumRotation = Math.PI / 2;
+    const maximumYRotation = Math.PI / 2;
 
     cube.rotation.y += deltaX * 0.01;
     cube.rotation.x = Math.max(
-      Math.min(cube.rotation.x + deltaY * 0.01, maximumRotation),
-      -maximumRotation
+      Math.min(cube.rotation.x + deltaY * 0.01, maximumYRotation),
+      -maximumYRotation
     );
 
     previousMousePositionRef.current = {
@@ -68,6 +102,7 @@ export default function Home() {
   }, []);
 
   const handleMouseUp = useCallback((event: MouseEvent) => {
+    if (isCubeAnimatingRef.current) return;
     isDraggingRef.current = false;
     // Check for 3D object clicks using raycasting
     if (sceneRef.current && cameraRef.current && rendererRef.current) {

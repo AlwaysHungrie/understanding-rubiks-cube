@@ -24,7 +24,8 @@ export const drawFloor = (scene: THREE.Scene, resetCube: () => void) => {
 
   // Create a 3D button on the floor
   const buttonGeometry = createRoundedBoxGeometry(4, 0.1, 1, 0.1, 8);
-  const button = new THREE.Mesh(buttonGeometry, floorMaterial);
+  const buttonMaterial = new THREE.MeshLambertMaterial({ color: COLORS.white });
+  const button = new THREE.Mesh(buttonGeometry, buttonMaterial);
 
   // Position the button on the floor surface
   button.position.set(0, -FLOOR_SIZE / 2 + 1, FLOOR_HEIGHT);
