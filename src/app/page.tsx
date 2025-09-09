@@ -1,8 +1,10 @@
 "use client";
 
+import { SCENE_CLICKABLE_TYPES } from "@/lib/constants";
 import { drawCube } from "@/lib/scene/cube";
 import { drawFloor } from "@/lib/scene/floor";
 import { setupScene } from "@/lib/scene/setup";
+import { checkObjectClick } from "@/lib/threejsHelpers/clickHelper";
 import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 
@@ -16,6 +18,9 @@ export default function Home() {
   const cubeRef = useRef<THREE.Group>(null);
   const cubeletsRef = useRef<THREE.Mesh[]>([]);
 
+  const isDraggingRef = useRef(false);
+  const previousMousePositionRef = useRef({ x: 0, y: 0 });
+
   const animate = useCallback(() => {
     if (!rendererRef.current) return;
     if (!sceneRef.current) return;
@@ -28,9 +33,53 @@ export default function Home() {
     renderer.render(scene, camera);
   }, [sceneRef, cameraRef, rendererRef]);
 
-  const resetCube = useCallback(() => {}, []);
+  const resetCube = useCallback(() => {
+    console.log("resetCube");
+  }, []);
 
   // Mouse handlers
+  const handleMouseDown = useCallback((event: MouseEvent) => {
+    isDraggingRef.current = true;
+    previousMousePositionRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+  }, []);
+
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    if (!isDraggingRef.current || !cubeRef.current) return;
+
+    const deltaX = event.clientX - previousMousePositionRef.current.x;
+    const deltaY = event.clientY - previousMousePositionRef.current.y;
+
+    const cube = cubeRef.current;
+    const maximumRotation = Math.PI / 2;
+
+    cube.rotation.y += deltaX * 0.01;
+    cube.rotation.x = Math.max(
+      Math.min(cube.rotation.x + deltaY * 0.01, maximumRotation),
+      -maximumRotation
+    );
+
+    previousMousePositionRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+  }, []);
+
+  const handleMouseUp = useCallback((event: MouseEvent) => {
+    isDraggingRef.current = false;
+    // Check for 3D object clicks using raycasting
+    if (sceneRef.current && cameraRef.current && rendererRef.current) {
+      checkObjectClick(
+        event,
+        sceneRef.current,
+        cameraRef.current,
+        rendererRef.current,
+        SCENE_CLICKABLE_TYPES
+      );
+    }
+  }, []);
 
   const initScene = useCallback(() => {
     if (!sceneContainerRef.current) return;
@@ -45,11 +94,25 @@ export default function Home() {
     const { cubelets, cubeGroup } = drawCube(scene);
     cubeletsRef.current = cubelets;
     cubeRef.current = cubeGroup;
-  }, [animate, resetCube]);
+
+    return renderer;
+  }, [animate, resetCube, handleMouseDown, handleMouseMove, handleMouseUp]);
 
   useEffect(() => {
-    initScene();
-  }, [initScene]);
+    const renderer = initScene();
+    if (!renderer) return;
+
+    const canvas = renderer.domElement;
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [initScene, handleMouseDown, handleMouseMove, handleMouseUp]);
 
   return <div ref={sceneContainerRef} />;
 }

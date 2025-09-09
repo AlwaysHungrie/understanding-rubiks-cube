@@ -15,7 +15,7 @@ export const COLORS = {
   rubik_yellow: 0xffd500,
 };
 
-export const SCENE_CLICKABLE_TYPES = ["floorButton"] as const;
+export const SCENE_CLICKABLE_TYPES = ["floorButton"];
 
 export const CUBE_SIZE = 1.5;
 export const CUBE_SPACING = 0.05;
