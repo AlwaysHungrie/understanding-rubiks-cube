@@ -65,8 +65,8 @@ export const setupScene = (window: Window) => {
   setupLights(scene);
 
   // Helpers
-  const axesHelper = new THREE.AxesHelper(10);
-  scene.add(axesHelper);
+  // const axesHelper = new THREE.AxesHelper(10);
+  // scene.add(axesHelper);
   // const controls = new OrbitControls(camera, renderer.domElement);
 
   return { scene, camera, renderer };

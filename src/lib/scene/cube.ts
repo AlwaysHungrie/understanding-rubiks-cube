@@ -117,7 +117,6 @@ const getHighlightColor = (color: number) => {
 
 export const highlightCubelet = (cubelet: THREE.Mesh) => {
   const cubeletMaterials = cubelet.material;
-  console.log(cubeletMaterials);
 
   if (!Array.isArray(cubeletMaterials)) return;
 
@@ -141,4 +140,83 @@ export const removeHighlights = (cubelets: THREE.Mesh[]) => {
       cubeletMaterial.needsUpdate = true;
     });
   });
+};
+
+export const findFace = (
+  cubelets: THREE.Mesh[],
+  normalKey: string,
+  cube: THREE.Group | null,
+  distance: 0 | 1 | 2
+) => {
+  if (!cube) return;
+  const normalKeyCoordinates = normalKey.split(",").map(Number);
+  const normalVector = new THREE.Vector3(
+    normalKeyCoordinates[0] * 5,
+    normalKeyCoordinates[1] * 5,
+    normalKeyCoordinates[2] * 5
+  );
+
+  const axis = normalVector.applyMatrix4(cube.matrixWorld);
+
+  const distances = cubelets
+    .map((cubelet) => {
+      const cubeCenter = new THREE.Vector3(
+        cubelet.position.x + CUBE_SIZE / 2,
+        cubelet.position.y + CUBE_SIZE / 2,
+        cubelet.position.z + CUBE_SIZE / 2
+      );
+      const transformedCubeCenter = cubeCenter.applyMatrix4(cube.matrixWorld);
+      const distance = transformedCubeCenter.distanceTo(axis);
+      return { distance, cubelet };
+    })
+    .sort((a, b) => a.distance - b.distance);
+
+  const faceCubelets = distances.slice(distance * 9, (distance + 1) * 9);
+  faceCubelets.forEach((cubelet) => {
+    highlightCubelet(cubelet.cubelet);
+  });
+  return { faceCubelets, axis };
+};
+
+export const rotateFace = (
+  cubelets: THREE.Mesh[],
+  normalKey: string,
+  cube: THREE.Group | null,
+  distance: 0 | 1 | 2
+) => {
+  if (!cube) return;
+  removeHighlights(cubelets);
+  
+  const face = findFace(cubelets, normalKey, cube, distance);
+  if (!face) return;
+
+  const { faceCubelets } = face;
+
+  const vertices = normalKey.split(",").map(Number);
+  const axis = new THREE.Vector3(
+    vertices[0],
+    vertices[1],
+    vertices[2]
+  );
+
+  // Remove any existing temporary group from previous rotations
+  cube.children
+    .filter((child) => child.userData.isTemporaryGroup)
+    .forEach((group) => {
+      cube.remove(group);
+    });
+
+  // Remove cubes from main group
+  faceCubelets.forEach(({cubelet}) => {
+    cube.remove(cubelet);
+  });
+
+  // Create a new temporary group for rotation
+  const tempGroup = new THREE.Group();
+  tempGroup.userData.isTemporaryGroup = true;
+  tempGroup.add(...faceCubelets.map(({cubelet}) => cubelet));
+
+  cube.add(tempGroup);
+
+  return { tempGroup, axis };
 };

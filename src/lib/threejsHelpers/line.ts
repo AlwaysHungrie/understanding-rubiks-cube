@@ -52,7 +52,12 @@ const recolorFaceNormal = (faceNormal: THREE.Group, color: number) => {
 
 export const findPrimaryNormals = (
   faceNormals: { key: string; normal: THREE.Group }[],
-  parent: THREE.Group
+  parent: THREE.Group,
+  primaryNormals: {
+    front: string;
+    top: string;
+    left: string;
+  }
 ) => {
   const directions = faceNormalCoordinates.map(([x, y, z]) => {
     const key = coordinatesToKey([x, y, z]);
@@ -96,4 +101,10 @@ export const findPrimaryNormals = (
       recolorFaceNormal(normal.normal, COLORS.rubik_red);
     }
   });
+
+  return {
+    front: frontFaceKey,
+    top: topFaceKey,
+    left: leftFaceKey,
+  };
 };

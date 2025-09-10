@@ -64,3 +64,55 @@ export const rotateObjectToTarget = (
 
   return velocity;
 };
+
+export const rotateObjectOnAxisTillTarget = (
+  cube: THREE.Group,
+  targetRotation: number,
+  currentVelocity: number,
+  axis: THREE.Vector3,
+  accelerationFactor: number = ACCELERATION_FACTOR,
+  dampingFactor: number = DAMPING_FACTOR,
+  maxVelocity: number = MAX_VELOCITY
+) => {
+  // We need to track the total rotation since the function started
+  if (!cube.userData.totalRotation) {
+    cube.userData.totalRotation = 0;
+  }
+
+  const remainingAngle = targetRotation - cube.userData.totalRotation;
+
+  // Normalize the angle to handle cases where we've rotated more than 2π
+  const normalizedRemainingAngle =
+    ((remainingAngle + Math.PI) % (2 * Math.PI)) - Math.PI;
+
+  const acceleration = normalizedRemainingAngle * accelerationFactor;
+  let newVelocity = (currentVelocity + acceleration) * dampingFactor;
+  if (Math.abs(newVelocity) > maxVelocity) {
+    newVelocity = Math.sign(newVelocity) * maxVelocity;
+  }
+
+  // Apply rotation to object, update total rotation tracking
+  cube.rotateOnAxis(axis, newVelocity);
+  cube.userData.totalRotation += newVelocity;
+
+  // Stop condition check
+  const E = 0.01;
+  const currentRemainingAngle = Math.abs(
+    targetRotation - cube.userData.totalRotation
+  );
+  const normalizedCurrentRemainingAngle = Math.min(
+    currentRemainingAngle,
+    Math.abs(currentRemainingAngle - 2 * Math.PI)
+  );
+
+  if (normalizedCurrentRemainingAngle < E) {
+    // Snap to exact target rotation
+    const currentTotalRotation = cube.userData.totalRotation;
+    const correctionAngle = targetRotation - currentTotalRotation;
+    cube.rotateOnAxis(axis, correctionAngle);
+    cube.userData.totalRotation = targetRotation;
+    newVelocity = 0;
+  }
+
+  return newVelocity;
+};

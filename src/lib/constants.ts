@@ -15,11 +15,11 @@ export const COLORS = {
   rubik_orange: 0xff5800,
   rubik_yellow: 0xffd500,
 
-  rubik_highlightwhite: 0xf0f0f0,
+  rubik_highlightwhite: 0xd1d1d1,
   rubik_highlightred: 0x780116,
   rubik_highlightgreen: 0x15803d,
   rubik_highlightblue: 0x0033a0,
-  rubik_highlightorange: 0xff8833,
+  rubik_highlightorange: 0xb83f00,
   rubik_highlightyellow: 0xff9000,
 };
 
