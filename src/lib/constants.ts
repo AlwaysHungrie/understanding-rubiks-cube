@@ -36,3 +36,7 @@ export const INITIAL_CUBE_ROTATION = {
 export const DAMPING_FACTOR = 0.8;
 export const MAX_VELOCITY = 0.1;
 export const ACCELERATION_FACTOR = 0.02;
+
+export const ROTATION_MAX_VELOCITY = 0.4;
+export const ROTATION_DAMPING_FACTOR = 0.8;
+export const ROTATION_ACCELERATION_FACTOR = 0.1;

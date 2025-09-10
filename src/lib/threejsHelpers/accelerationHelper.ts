@@ -4,6 +4,9 @@ import {
   ACCELERATION_FACTOR,
   DAMPING_FACTOR,
   MAX_VELOCITY,
+  ROTATION_ACCELERATION_FACTOR,
+  ROTATION_DAMPING_FACTOR,
+  ROTATION_MAX_VELOCITY,
 } from "../constants";
 
 export const rotateObjectToTarget = (
@@ -70,9 +73,9 @@ export const rotateObjectOnAxisTillTarget = (
   targetRotation: number,
   currentVelocity: number,
   axis: THREE.Vector3,
-  accelerationFactor: number = ACCELERATION_FACTOR,
-  dampingFactor: number = DAMPING_FACTOR,
-  maxVelocity: number = MAX_VELOCITY
+  accelerationFactor: number = ROTATION_ACCELERATION_FACTOR,
+  dampingFactor: number = ROTATION_DAMPING_FACTOR,
+  maxVelocity: number = ROTATION_MAX_VELOCITY
 ) => {
   // We need to track the total rotation since the function started
   if (!cube.userData.totalRotation) {
@@ -85,7 +88,7 @@ export const rotateObjectOnAxisTillTarget = (
   const normalizedRemainingAngle =
     ((remainingAngle + Math.PI) % (2 * Math.PI)) - Math.PI;
 
-  const acceleration = normalizedRemainingAngle * accelerationFactor;
+  const acceleration = Math.abs(normalizedRemainingAngle * accelerationFactor);
   let newVelocity = (currentVelocity + acceleration) * dampingFactor;
   if (Math.abs(newVelocity) > maxVelocity) {
     newVelocity = Math.sign(newVelocity) * maxVelocity;

@@ -7,31 +7,33 @@ import * as THREE from "three";
 interface ControlsProps {
   cubeletsRef: RefObject<THREE.Mesh[] | null>;
   cubeRef: RefObject<THREE.Group | null>;
-  faceNormalsRef: RefObject<{ key: string; normal: THREE.Group }[] | null>;
   primaryNormalsRef: RefObject<{
     front: string;
     top: string;
     left: string;
   }>;
-  temporaryFaceGroupRef: RefObject<THREE.Group | null>;
-  temporaryFaceVelocityRef: RefObject<number>;
-  temporaryFaceRotationAxisRef: RefObject<THREE.Vector3 | null>;
+  faceGroupRef: RefObject<THREE.Group | null>;
+  faceVelocityRef: RefObject<number>;
+  faceRotationAxisRef: RefObject<THREE.Vector3 | null>;
 }
 
 export default function Controls({
   cubeletsRef,
   cubeRef,
-  faceNormalsRef,
   primaryNormalsRef,
-  temporaryFaceGroupRef,
-  temporaryFaceVelocityRef,
-  temporaryFaceRotationAxisRef,
+  faceGroupRef,
+  faceVelocityRef,
+  faceRotationAxisRef,
 }: ControlsProps) {
-  const handleClick = (face: "front" | "top" | "left", col: 0 | 1 | 2) => {
+  const handleClick = (
+    face: "front" | "top" | "left",
+    col: 0 | 1 | 2,
+    direction: 1 | -1
+  ) => {
     if (cubeletsRef.current) {
       removeHighlights(cubeletsRef.current);
     }
-    if (temporaryFaceGroupRef.current) return;
+    if (faceGroupRef.current) return;
     if (cubeletsRef.current && cubeRef.current) {
       const rotationResult = rotateFace(
         cubeletsRef.current,
@@ -41,9 +43,10 @@ export default function Controls({
       );
       if (!rotationResult) return;
       const { tempGroup, axis } = rotationResult;
-      temporaryFaceVelocityRef.current = 0.01;
-      temporaryFaceRotationAxisRef.current = axis;
-      temporaryFaceGroupRef.current = tempGroup;
+      faceVelocityRef.current = 0.01;
+      axis.multiplyScalar(direction);
+      faceRotationAxisRef.current = axis;
+      faceGroupRef.current = tempGroup;
     }
   };
   return (
@@ -64,14 +67,14 @@ export default function Controls({
                 key={`sprite-${faceIndex}-${col}`}
                 className="w-20 h-20 bg-white rounded-md border-2 flex items-center justify-center border-gray-300 hover:border-gray-500 transition-colors overflow-hidden"
                 onClick={() => {
-                  handleClick(face, col);
+                  handleClick(face, col, 1);
                 }}
                 onContextMenu={(e) => {
                   e.preventDefault();
-                  handleClick(face, col);
+                  handleClick(face, col, -1);
                 }}
                 onMouseEnter={() => {
-                  if (temporaryFaceGroupRef.current) return;
+                  if (faceGroupRef.current) return;
                   if (cubeletsRef.current && cubeRef.current) {
                     findFace(
                       cubeletsRef.current,

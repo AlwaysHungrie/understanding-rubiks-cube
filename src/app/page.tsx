@@ -35,9 +35,9 @@ export default function Home() {
   const cubeVelocityRef = useRef({ x: 0, y: 0 });
 
   // for moving faces, velocity refers to angular velocity
-  const temporaryFaceGroupRef = useRef<THREE.Group | null>(null);
-  const temporaryFaceVelocityRef = useRef(0);
-  const temporaryFaceRotationAxisRef = useRef<THREE.Vector3 | null>(null);
+  const faceGroupRef = useRef<THREE.Group | null>(null);
+  const faceVelocityRef = useRef(0);
+  const faceRotationAxisRef = useRef<THREE.Vector3 | null>(null);
 
   const primaryNormalsRef = useRef<{
     front: string;
@@ -75,34 +75,34 @@ export default function Home() {
       cubeVelocityRef.current = finalVelocity;
     }
 
-    if (temporaryFaceGroupRef.current && temporaryFaceRotationAxisRef.current) {
+    if (faceGroupRef.current && faceRotationAxisRef.current) {
       const finalVelocity = rotateObjectOnAxisTillTarget(
-        temporaryFaceGroupRef.current,
+        faceGroupRef.current,
         Math.PI / 2,
-        temporaryFaceVelocityRef.current,
-        temporaryFaceRotationAxisRef.current
+        faceVelocityRef.current,
+        faceRotationAxisRef.current
       );
 
       if (finalVelocity === 0) {
         // clean up temporary face, add cublets back to main group
-        const cublets = temporaryFaceGroupRef.current?.children;
+        const cublets = faceGroupRef.current?.children;
         if (cublets) {
           // Apply the temporary group's local transformation to each cublet
-          const tempGroup = temporaryFaceGroupRef.current;
+          const tempGroup = faceGroupRef.current;
           tempGroup.updateMatrix();
 
           cublets.forEach((cublet) => {
             cublet.applyMatrix4(tempGroup.matrix);
           });
 
-          cubeRef.current?.remove(temporaryFaceGroupRef.current);
+          cubeRef.current?.remove(faceGroupRef.current);
           cubeRef.current?.add(...cublets);
         }
 
         // reset velocity and axis
-        temporaryFaceVelocityRef.current = 0;
-        temporaryFaceRotationAxisRef.current = null;
-        temporaryFaceGroupRef.current = null;
+        faceVelocityRef.current = 0;
+        faceRotationAxisRef.current = null;
+        faceGroupRef.current = null;
       }
     }
 
@@ -149,7 +149,6 @@ export default function Home() {
       deltaX = -deltaX;
     }
     cube.rotation.y += deltaX * 0.01;
-
     cube.rotation.x += deltaY * 0.01;
     // cube.rotation.x = Math.max(
     //   Math.min(cube.rotation.x + deltaY * 0.01, maximumYRotation),
@@ -234,11 +233,10 @@ export default function Home() {
       <Controls
         cubeletsRef={cubeletsRef}
         cubeRef={cubeRef}
-        faceNormalsRef={faceNormalsRef}
         primaryNormalsRef={primaryNormalsRef}
-        temporaryFaceGroupRef={temporaryFaceGroupRef}
-        temporaryFaceVelocityRef={temporaryFaceVelocityRef}
-        temporaryFaceRotationAxisRef={temporaryFaceRotationAxisRef}
+        faceGroupRef={faceGroupRef}
+        faceVelocityRef={faceVelocityRef}
+        faceRotationAxisRef={faceRotationAxisRef}
       />
     </div>
   );
