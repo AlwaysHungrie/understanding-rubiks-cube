@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import { COLORS, CUBE_SIZE, CUBE_SPACING } from "../constants";
+import { COLORS, CUBE_SIZE, CUBE_SPACING, FACE_LEVELS } from "../constants";
 import { drawLine } from "../threejsHelpers/line";
 import { coordinatesToKey } from "../threejsHelpers/helpers";
 
@@ -146,7 +146,7 @@ export const findFace = (
   cubelets: THREE.Mesh[],
   normalKey: string,
   cube: THREE.Group | null,
-  distance: 0 | 1 | 2
+  distance: typeof FACE_LEVELS[number]
 ) => {
   if (!cube) return;
   const normalKeyCoordinates = normalKey.split(",").map(Number);
@@ -182,7 +182,7 @@ export const rotateFace = (
   cubelets: THREE.Mesh[],
   normalKey: string,
   cube: THREE.Group | null,
-  distance: 0 | 1 | 2
+  distance: typeof FACE_LEVELS[number]
 ) => {
   if (!cube) return;
   removeHighlights(cubelets);

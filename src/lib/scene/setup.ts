@@ -4,7 +4,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 const setupLights = (scene: THREE.Scene) => {
   // Ambient light
-  const ambientLight = new THREE.AmbientLight(COLORS.white, 2);
+  const ambientLight = new THREE.AmbientLight(COLORS.white, 1);
 
   // Main light
   const mainLight = new THREE.DirectionalLight(COLORS.white, 1);
@@ -61,6 +61,7 @@ export const setupScene = (window: Window) => {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setClearColor(COLORS.offwhite);
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   setupLights(scene);
 

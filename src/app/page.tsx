@@ -1,7 +1,19 @@
 "use client";
 
-import { INITIAL_CUBE_ROTATION, SCENE_CLICKABLE_TYPES } from "@/lib/constants";
-import { drawCube } from "@/lib/scene/cube";
+import {
+  FACE_DIRECTIONS,
+  FACE_LEVELS,
+  FACE_TYPES,
+  FaceMove,
+  INITIAL_CUBE_ROTATION,
+  SCENE_CLICKABLE_TYPES,
+} from "@/lib/constants";
+import {
+  drawCube,
+  findFace,
+  removeHighlights,
+  rotateFace,
+} from "@/lib/scene/cube";
 import { drawFloor } from "@/lib/scene/floor";
 import { setupScene } from "@/lib/scene/setup";
 import {
@@ -13,6 +25,7 @@ import { findPrimaryNormals } from "@/lib/threejsHelpers/line";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import Controls from "@/components/Controls";
+import { MoveList } from "@/components/MoveList";
 
 export default function Home() {
   const sceneContainerRef = useRef<HTMLDivElement>(null);
@@ -31,7 +44,7 @@ export default function Home() {
   const previousMousePositionRef = useRef({ x: 0, y: 0 });
 
   // for reseting cube to original position
-  const isCubeAnimatingRef = useRef(false);
+  const cubeRotationTargetRef = useRef<{ x: number; y: number } | null>(null);
   const cubeVelocityRef = useRef({ x: 0, y: 0 });
 
   // for moving faces, velocity refers to angular velocity
@@ -45,6 +58,11 @@ export default function Home() {
     left: string;
   }>({ front: "", top: "", left: "" });
 
+  const onRotationCompleteCallbackRef = useRef<(() => void) | null>(null);
+  const onMoveCompleteCallbackRef = useRef<(() => void) | null>(null);
+
+  const [moves, setMoves] = useState<FaceMove[]>([]);
+
   const animate = useCallback(() => {
     if (!rendererRef.current) return;
     if (!sceneRef.current) return;
@@ -55,21 +73,24 @@ export default function Home() {
     const camera = cameraRef.current;
 
     const cube = cubeRef.current;
-    if (isCubeAnimatingRef.current && cube) {
+    if (cubeRotationTargetRef.current && cube) {
       const finalVelocity = rotateObjectToTarget(
         cube,
-        INITIAL_CUBE_ROTATION,
+        cubeRotationTargetRef.current,
         cubeVelocityRef.current
       );
 
       if (finalVelocity.x === 0 && finalVelocity.y === 0) {
-        isCubeAnimatingRef.current = false;
+        cubeRotationTargetRef.current = null;
         if (faceNormalsRef.current) {
           primaryNormalsRef.current = findPrimaryNormals(
             faceNormalsRef.current,
             cube,
             primaryNormalsRef.current
           );
+        }
+        if (onRotationCompleteCallbackRef.current) {
+          onRotationCompleteCallbackRef.current();
         }
       }
       cubeVelocityRef.current = finalVelocity;
@@ -103,26 +124,18 @@ export default function Home() {
         faceVelocityRef.current = 0;
         faceRotationAxisRef.current = null;
         faceGroupRef.current = null;
+
+        if (onMoveCompleteCallbackRef.current) {
+          onMoveCompleteCallbackRef.current();
+        }
       }
     }
 
     renderer.render(scene, camera);
   }, [sceneRef, cameraRef, rendererRef]);
 
-  const resetCube = useCallback(() => {
-    isCubeAnimatingRef.current = true;
-    cubeVelocityRef.current = { x: 0, y: 0 };
-
-    // reset dragging
-    isDraggingRef.current = false;
-    previousMousePositionRef.current = { x: 0, y: 0 };
-
-    console.log("resetCube");
-  }, []);
-
   // Mouse handlers
   const handleMouseDown = useCallback((event: MouseEvent) => {
-    if (isCubeAnimatingRef.current) return;
     isDraggingRef.current = true;
     previousMousePositionRef.current = {
       x: event.clientX,
@@ -131,7 +144,6 @@ export default function Home() {
   }, []);
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
-    if (isCubeAnimatingRef.current) return;
     if (!isDraggingRef.current || !cubeRef.current) return;
 
     let deltaX = event.clientX - previousMousePositionRef.current.x;
@@ -162,7 +174,6 @@ export default function Home() {
   }, []);
 
   const handleMouseUp = useCallback((event: MouseEvent) => {
-    if (isCubeAnimatingRef.current) return;
     if (!faceNormalsRef.current || !cubeRef.current) return;
 
     isDraggingRef.current = false;
@@ -187,16 +198,9 @@ export default function Home() {
     }
   }, []);
 
-  const initScene = useCallback(() => {
-    if (!sceneContainerRef.current) return;
-    const { scene, camera, renderer } = setupScene(window);
-    renderer.setAnimationLoop(animate);
-    sceneContainerRef.current.appendChild(renderer.domElement);
-    sceneRef.current = scene;
-    cameraRef.current = camera;
-    rendererRef.current = renderer;
-
-    drawFloor(scene, resetCube);
+  const initCube = useCallback(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
     const { cubelets, cubeGroup, faceNormals } = drawCube(scene);
     cubeletsRef.current = cubelets;
     cubeRef.current = cubeGroup;
@@ -208,9 +212,156 @@ export default function Home() {
         primaryNormalsRef.current
       );
     }
+  }, []);
 
+  const rotateCube = useCallback(async (rotation: { x: number; y: number }) => {
+    if (cubeletsRef.current) {
+      removeHighlights(cubeletsRef.current);
+    }
+    cubeRotationTargetRef.current = rotation;
+    cubeVelocityRef.current = { x: 0, y: 0 };
+
+    await new Promise((resolve) => {
+      onRotationCompleteCallbackRef.current = () => resolve(true);
+    });
+  }, []);
+
+  const initScene = useCallback(() => {
+    if (!sceneContainerRef.current) return;
+    const { scene, camera, renderer } = setupScene(window);
+    renderer.setAnimationLoop(animate);
+    sceneContainerRef.current.appendChild(renderer.domElement);
+    sceneRef.current = scene;
+    cameraRef.current = camera;
+    rendererRef.current = renderer;
+
+    drawFloor(scene, () => rotateCube(INITIAL_CUBE_ROTATION));
+    initCube();
     return renderer;
-  }, [animate, resetCube, handleMouseDown, handleMouseMove, handleMouseUp]);
+  }, [
+    animate,
+    rotateCube,
+    initCube,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+  ]);
+
+  const resetCube = useCallback(() => {
+    const scene = sceneRef.current;
+    const cube = cubeRef.current;
+    if (!scene || !cube) return;
+    // destroy cube
+    scene.remove(cube);
+
+    // reset all refs
+    cubeRef.current = null;
+    cubeletsRef.current = null;
+    faceNormalsRef.current = null;
+    isDraggingRef.current = false;
+    previousMousePositionRef.current = { x: 0, y: 0 };
+    cubeRotationTargetRef.current = null;
+    cubeVelocityRef.current = { x: 0, y: 0 };
+
+    faceGroupRef.current = null;
+    faceVelocityRef.current = 0;
+    faceRotationAxisRef.current = null;
+    primaryNormalsRef.current = { front: "", top: "", left: "" };
+
+    onRotationCompleteCallbackRef.current = null;
+    onMoveCompleteCallbackRef.current = null;
+
+    // init scene
+    initCube();
+
+    // reset moves
+    setMoves([]);
+  }, [initCube]);
+
+  const moveFace = useCallback(
+    async (
+      faceType: (typeof FACE_TYPES)[number],
+      faceLevel: (typeof FACE_LEVELS)[number],
+      direction: (typeof FACE_DIRECTIONS)[number]
+    ) => {
+      if (cubeletsRef.current) {
+        removeHighlights(cubeletsRef.current);
+      }
+      if (faceGroupRef.current) return;
+      if (cubeletsRef.current && cubeRef.current) {
+        const rotationResult = rotateFace(
+          cubeletsRef.current,
+          primaryNormalsRef.current[faceType],
+          cubeRef.current,
+          faceLevel
+        );
+        if (!rotationResult) return;
+
+        const currentCubeRotation = {
+          x: cubeRef.current.rotation.x,
+          y: cubeRef.current.rotation.y,
+        };
+
+        const { tempGroup, axis } = rotationResult;
+
+        faceVelocityRef.current = 0;
+        axis.multiplyScalar(direction);
+        faceRotationAxisRef.current = axis;
+        faceGroupRef.current = tempGroup;
+
+        setMoves((prevMoves) => {
+          if (prevMoves.length === 0)
+            return [
+              {
+                face: faceType,
+                level: faceLevel,
+                direction,
+                rotation: currentCubeRotation,
+              },
+            ];
+
+          const lastMove = prevMoves[prevMoves.length - 1];
+
+          if (
+            lastMove.face === faceType &&
+            lastMove.level === faceLevel &&
+            lastMove.direction === -1 * direction
+          ) {
+            return prevMoves.slice(0, -1);
+          }
+          return [
+            ...prevMoves,
+            {
+              face: faceType,
+              level: faceLevel,
+              direction,
+              rotation: currentCubeRotation,
+            },
+          ];
+        });
+
+        await new Promise((resolve) => {
+          onMoveCompleteCallbackRef.current = () => resolve(true);
+        });
+      }
+    },
+    []
+  );
+
+  const reverseMoves = useCallback(
+    async (moves: FaceMove[]) => {
+      const movesCopy = [...moves].reverse();
+      for (const move of movesCopy) {
+        const direction = move.direction === 1 ? -1 : 1;
+        await rotateCube(move.rotation);
+        await moveFace(move.face, move.level, direction);
+      }
+      if (cubeletsRef.current) {
+        removeHighlights(cubeletsRef.current);
+      }
+    },
+    [moveFace]
+  );
 
   useEffect(() => {
     const renderer = initScene();
@@ -231,12 +382,31 @@ export default function Home() {
   return (
     <div ref={sceneContainerRef} className="relative w-full h-screen">
       <Controls
-        cubeletsRef={cubeletsRef}
-        cubeRef={cubeRef}
-        primaryNormalsRef={primaryNormalsRef}
-        faceGroupRef={faceGroupRef}
-        faceVelocityRef={faceVelocityRef}
-        faceRotationAxisRef={faceRotationAxisRef}
+        removeHighlights={() => {
+          if (cubeletsRef.current) {
+            removeHighlights(cubeletsRef.current);
+          }
+        }}
+        hightlightFace={(
+          faceType: (typeof FACE_TYPES)[number],
+          faceLevel: (typeof FACE_LEVELS)[number]
+        ) => {
+          if (faceGroupRef.current) return;
+          if (cubeletsRef.current && cubeRef.current) {
+            findFace(
+              cubeletsRef.current,
+              primaryNormalsRef.current[faceType],
+              cubeRef.current,
+              faceLevel
+            );
+          }
+        }}
+        handleClick={moveFace}
+      />
+      <MoveList
+        moves={moves}
+        resetCube={resetCube}
+        reverseMoves={() => reverseMoves(moves)}
       />
     </div>
   );

@@ -20,7 +20,7 @@ export const COLORS = {
   rubik_highlightgreen: 0x15803d,
   rubik_highlightblue: 0x0033a0,
   rubik_highlightorange: 0xb83f00,
-  rubik_highlightyellow: 0xff9000,
+  rubik_highlightyellow: 0xc9a800,
 };
 
 export const SCENE_CLICKABLE_TYPES = ["floorButton"];
@@ -40,3 +40,14 @@ export const ACCELERATION_FACTOR = 0.02;
 export const ROTATION_MAX_VELOCITY = 0.4;
 export const ROTATION_DAMPING_FACTOR = 0.8;
 export const ROTATION_ACCELERATION_FACTOR = 0.1;
+
+export const FACE_TYPES = ["front", "top", "left"] as const;
+export const FACE_LEVELS = [0, 1, 2] as const;
+export const FACE_DIRECTIONS = [1, -1] as const;
+
+export type FaceMove = {
+  face: (typeof FACE_TYPES)[number];
+  level: (typeof FACE_LEVELS)[number];
+  direction: (typeof FACE_DIRECTIONS)[number];
+  rotation: { x: number; y: number };
+};
