@@ -8,8 +8,8 @@ export const ControlContainer = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className={clsx(" bg-black/60 rounded-lg p-1 w-72", className)}>
-      <div className="flex justify-center items-center gap-2 border border-white rounded-md p-4">
+    <div className={clsx("bg-black/60 rounded-lg p-1 w-72", className)}>
+      <div className="flex flex-1 justify-center items-center gap-2 border border-white rounded-md p-4">
         {children}
       </div>
     </div>

@@ -6,8 +6,8 @@ import { LockIcon } from "lucide-react";
 export const Header = () => {
   return (
     <>
-      <div className="w-full relative h-8">
-        <ControlContainer className="absolute top-0 left-0">
+      <div className="w-full relative flex items-start mb-16">
+        <ControlContainer className="flex">
           <div className="text-white">
             Estimated Time: <span className="font-bold">90 minutes</span>
           </div>
@@ -15,7 +15,7 @@ export const Header = () => {
 
         <MessageActions
           message="Finish all the steps of the guide to unlock this action."
-          className="absolute top-0 right-0"
+          className="ml-auto"
           actions={
             <PrimaryButton disabled className="gap-2">
               Solve Now
