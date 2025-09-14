@@ -1,6 +1,6 @@
 import { Heart } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 const profile = {
   pictureUrl:
@@ -14,11 +14,13 @@ export const TweetContent = ({
   index,
   content,
   isLiked,
+  isLast,
   toggleStatus,
 }: {
   index: number;
-  content: string;
+  content: string[];
   isLiked: boolean;
+  isLast: boolean;
   toggleStatus: () => void;
 }) => {
   return (
@@ -39,8 +41,8 @@ export const TweetContent = ({
           </div>
 
           {/* Connecting line */}
-          {index < 2 && (
-            <div className="absolute left-11 top-16 w-0.5 h-80 bg-gray-300"></div>
+          {!isLast && (
+            <div className="absolute left-11 top-16 w-0.5 h-100 bg-gray-300"></div>
           )}
 
           {/* Tweet body */}
@@ -60,7 +62,12 @@ export const TweetContent = ({
 
             {/* Tweet text */}
             <div className="text-gray-900 dark:text-white mb-4 leading-relaxed text-lg">
-              {content}
+              {content.map((c, i) => (
+                <Fragment key={`${index}-${i}`}>
+                  <div>{c}</div>
+                  {i < content.length - 1 && <br />}
+                </Fragment>
+              ))}
             </div>
 
             {/* Like button */}

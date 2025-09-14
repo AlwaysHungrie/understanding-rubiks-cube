@@ -7,19 +7,43 @@ import Footer from "@/components/landing/footer";
 
 const content = [
   {
+    id: 0,
+    content: [
+      "This guide will walk you through all the logical steps to solve the Rubik's Cube all by yourself.",
+      "My main goal is for you to start using logical reasoning in your daily life. And stop relying on others to solve your problems for you.",
+      "It is easy and something all of us are naturally good at. Don't let anyone tell you otherwise.",
+    ],
+  },
+  {
     id: 1,
-    content:
-      "The Rubik's Cube isn't just a puzzle—it's a 3D representation of mathematical beauty. Each of the 43,252,003,274,489,856,000 possible positions tells a story of permutation and combination.",
+    content: [
+      "Rubik's Cube does look intimidating. At first glance, it looks like you will need advanced visualization and reasoning skills in 3 dimensions in order to solve it.",
+      "Because of its scary appearance, simply knowing the solution is widely regarded as a demonstration of some form of intelligence or talent.",
+    ],
   },
   {
     id: 2,
-    content:
-      "What makes solving the cube fascinating isn't memorizing algorithms, but understanding the underlying logic. Every move affects multiple pieces, creating a delicate dance of cause and effect. The challenge? Thinking in 3D space.",
+    content: [
+      "Due to its popularity, the internet is flooded with solutions and guides that only rely on remembering said solutions.",
+      "Almost all guides only focus on using your memory, not your thinking skills.",
+      "Worst of all, it is now generally understood that this puzzle can only be solved by memorizing a set of algorithms.",
+    ],
   },
   {
     id: 3,
-    content:
-      "The beauty of the Rubik's Cube lies in its deceptive simplicity. Six faces, nine squares each, yet it represents one of the most complex puzzles ever created. It teaches us that complex problems often have elegant solutions.",
+    content: [
+      "What was once a beautiful puzzle, is now reduced to a hand eye coordination exercise.",
+      "Even a monkey can be taught how to solve it.",
+      "Do you want to remain a monkey, or learn to think like a human?",
+    ],
+  },
+  {
+    id: 4,
+    content: [
+      "I am assuming you can already solve one side by yourself. But doing so jumbles the rest of the cube.",
+      "Knowing how to solve one side is enough to solve the entire cube.",
+      "Let us see how...",
+    ],
   },
 ];
 
@@ -49,6 +73,7 @@ export default function Foreword() {
                 content={tweet.content}
                 isLiked={likedContent.has(tweet.id)}
                 toggleStatus={() => toggleStatus(tweet.id)}
+                isLast={index === content.length - 1}
               />
             </div>
           ))}
