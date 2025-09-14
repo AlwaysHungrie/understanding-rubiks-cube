@@ -26,7 +26,7 @@ export const TweetContent = ({
   return (
     <div className="relative">
       {/* Tweet content */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm transition-shadow duration-200">
+      <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm transition-shadow duration-200">
         <div className="flex gap-4">
           {/* Avatar */}
           <div className="flex-shrink-0">

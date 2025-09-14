@@ -2,8 +2,12 @@
 
 import { Header } from "@/components/landing/header";
 import { TweetContent } from "@/components/common/tweetContent";
-import { useCallback, useState } from "react";
 import Footer from "@/components/landing/footer";
+import { MessageActions } from "@/components/common/messageActions";
+import { PrimaryButton } from "@/components/common/primaryButton";
+import { ControlContainer } from "@/components/common/controlContainer";
+import { useProgress } from "@/context/progressContext";
+import { useRouter } from "next/navigation";
 
 const content = [
   {
@@ -48,21 +52,31 @@ const content = [
 ];
 
 export default function Foreword() {
-  const [likedContent, setLikedContent] = useState<Set<number>>(new Set());
-  const toggleStatus = useCallback((id: number) => {
-    setLikedContent((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  }, []);
+  const router = useRouter();
+  const { setCurrentSectionIndex, likedContent, toggleStatus } = useProgress();
 
   return (
     <>
+      <div className="w-full flex items-start mb-4 sticky top-12">
+        <ControlContainer className="flex">
+          <div className="font-bold text-white">Foreword</div>
+        </ControlContainer>
+        <MessageActions
+          message="Click the button below if you can solve one side of the cube by yourself."
+          className="ml-auto"
+          actions={
+            <PrimaryButton
+              className="gap-2"
+              onClick={() => {
+                setCurrentSectionIndex(1);
+                router.push("/");
+              }}
+            >
+              Start Guide
+            </PrimaryButton>
+          }
+        />
+      </div>
       <Header />
       <div className="max-w-2xl mx-auto mt-16 px-4">
         <div className="space-y-4">

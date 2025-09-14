@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import "./globals.css";
+import { ProgressProvider } from "@/context/progressContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +33,11 @@ export default function RootLayout({
       <body
         className={`${oswald.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="min-h-screen">
-          <div className="container mx-auto px-6 pt-12 pb-4">{children}</div>
-        </div>
+        <ProgressProvider>
+          <div className="min-h-screen">
+            <div className="mx-auto px-6 pt-12 pb-4">{children}</div>
+          </div>
+        </ProgressProvider>
       </body>
     </html>
   );

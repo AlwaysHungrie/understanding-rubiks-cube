@@ -8,9 +8,30 @@ import { ControlContainer } from "@/components/common/controlContainer";
 import { MessageActions } from "@/components/common/messageActions";
 import { PrimaryButton } from "@/components/common/primaryButton";
 import { LockIcon } from "lucide-react";
+import { useProgress } from "@/context/progressContext";
+
+const sectionInfo = [
+  {
+    label: "Foreword: This is guide is not clickbait",
+    description:
+      "Looking at Rubik's Cube as a logical puzzle and not a memorization game",
+    link: "/foreword",
+    backgroundColor: "#EBB998",
+    backgroundImageUrl:
+      "https://unsplash.com/photos/MuB8snLj2xQ/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8Ym84alFLVGFFMFl8fHx8fDJ8fDE3NTc4MDIxNjV8&force=true&w=1920",
+  },
+  {
+    label: "Anatomy of a Rubik's Cube",
+    description: "Indentifying the subtleties of the Rubik's Cube design",
+    link: "/anatomy",
+    backgroundColor: "#BEC0B7",
+    backgroundImageUrl:
+      "https://unsplash.com/photos/aYPGdQBoq5Y/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzU3ODA2Mjc1fA&force=true&w=1920",
+  },
+];
 
 export default function Home() {
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const { currentSectionIndex } = useProgress();
   return (
     <>
       <div className="w-full relative flex items-start mb-16">
@@ -36,26 +57,7 @@ export default function Home() {
 
       <div className="mt-20 max-w-4xl mx-auto">
         <div className="grid gap-8">
-          {[
-            {
-              label: "Foreword: This is guide is not clickbait",
-              description:
-                "Looking at Rubik's Cube as a logical puzzle and not a memorization game",
-              link: "/foreword",
-              backgroundColor: "#EBB998",
-              backgroundImageUrl:
-                "https://unsplash.com/photos/MuB8snLj2xQ/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8Ym84alFLVGFFMFl8fHx8fDJ8fDE3NTc4MDIxNjV8&force=true&w=1920",
-            },
-            {
-              label: "Anatomy of a Rubik's Cube",
-              description:
-                "Indentifying the subtleties of the Rubik's Cube design",
-              link: "/anatomy",
-              backgroundColor: "#BEC0B7",
-              backgroundImageUrl:
-                "https://unsplash.com/photos/aYPGdQBoq5Y/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzU3ODA2Mjc1fA&force=true&w=1920",
-            },
-          ].map((sectionInfo, index) => (
+          {sectionInfo.map((sectionInfo, index) => (
             <SectionCard
               key={index}
               number={index}
