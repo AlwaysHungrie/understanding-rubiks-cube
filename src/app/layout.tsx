@@ -32,7 +32,9 @@ export default function RootLayout({
       <body
         className={`${oswald.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="min-h-screen">
+          <div className="container mx-auto px-6 pt-12 pb-4">{children}</div>
+        </div>
       </body>
     </html>
   );

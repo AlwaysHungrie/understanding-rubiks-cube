@@ -3,8 +3,10 @@ import Link from "next/link";
 
 export type SectionInfo = {
   label: string;
+  description: string;
   backgroundImageUrl: string;
   backgroundColor: string;
+  link: string;
 };
 
 export const SectionCard = ({
@@ -18,7 +20,8 @@ export const SectionCard = ({
   isLocked: boolean;
   isCurrent: boolean;
 }) => {
-  const { label, backgroundImageUrl, backgroundColor } = sectionInfo;
+  const { label, backgroundImageUrl, backgroundColor, link, description } =
+    sectionInfo;
   return (
     <Link
       className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${
@@ -27,7 +30,7 @@ export const SectionCard = ({
       style={{
         backgroundColor: isLocked ? "#444444" : backgroundColor,
       }}
-      href={`/section/${number}`}
+      href={link}
     >
       {/* Background Image */}
       <div
@@ -50,6 +53,9 @@ export const SectionCard = ({
             <h3 className="font-oswald font-bold text-3xl text-white drop-shadow-2xl">
               {label}
             </h3>
+            <p className="text-white/80 font-medium mb-2">
+              {description}
+            </p>
           </div>
 
           {/* Status Icon */}
