@@ -14,7 +14,7 @@ const sectionInfo = [
   {
     label: "Foreword: This is guide is not clickbait",
     description:
-      "Looking at Rubik's Cube as a logical puzzle and not a memorization game",
+      "Rubik's Cube is a logical puzzle and not a memorization game",
     link: "/foreword",
     backgroundColor: "#EBB998",
     backgroundImageUrl:
@@ -34,8 +34,8 @@ export default function Home() {
   const { currentSectionIndex } = useProgress();
   return (
     <div className="min-h-screen">
-      <div className="mx-auto px-6 pt-12 pb-4">
-        <div className="w-full relative flex items-start mb-16">
+      <div className="mx-auto px-4 md:px-6 pt-4 md:pt-12 pb-4">
+        <div className="w-full relative flex items-start mb-16 gap-4 flex-col md:flex-row">
           <ControlContainer className="flex">
             <div className="text-white">
               Estimated Time: <span className="font-bold">90 minutes</span>

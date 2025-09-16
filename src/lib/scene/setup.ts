@@ -60,7 +60,7 @@ export const setupScene = (window: Window) => {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setClearColor(COLORS.offwhite);
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(window.innerWidth, window.innerHeight - 1);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   setupLights(scene);

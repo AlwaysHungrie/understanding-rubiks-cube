@@ -47,27 +47,27 @@ export const SectionCard = ({
       />
 
       {/* Content */}
-      <div className="relative z-10 p-8 h-64 flex flex-col justify-between">
+      <div className="relative z-10 p-6 md:p-8 h-56 md:h-64 flex flex-col justify-between">
         {/* Header with number and label */}
         <div className="flex items-start justify-between">
           <div>
             <div className="text-white/80 text-sm font-semibold mb-1">
               Step {number + 1}
             </div>
-            <h3 className="font-oswald font-bold text-3xl text-white drop-shadow-2xl">
+            <h3 className="font-oswald font-bold text-2xl md:text-3xl text-white drop-shadow-2xl">
               {label}
             </h3>
-            <p className="text-white/80 font-medium mb-2">{description}</p>
+            <p className="text-white/80 font-medium mb-2 text-sm md:text-base">{description}</p>
           </div>
 
           {/* Status Icon */}
           {isCurrent ? (
-            <div className="p-3 border-2 border-white/30 rounded-full">
-              <div className="w-4 h-4 bg-green-600 rounded-full" />
+            <div className="p-2 md:p-3 border-2 border-white/30 rounded-full">
+              <div className="w-3 h-3 md:w-4 md:h-4 bg-green-600 rounded-full" />
             </div>
           ) : !isLocked ? (
-            <div className="p-3 rounded-full backdrop-blur-sm transition-all duration-300 bg-white/20 border border-white/30 group-hover:bg-white/30">
-              <CheckIcon className="w-6 h-6 text-white" />
+            <div className="p-2 md:p-3 rounded-full backdrop-blur-sm transition-all duration-300 bg-white/20 border border-white/30 group-hover:bg-white/30">
+              <CheckIcon className="w-3 h-3 md:w-6 md:h-6 text-white" />
             </div>
           ) : null}
         </div>

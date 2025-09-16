@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 // Helper function to handle 3D object clicks using raycasting
 export const checkObjectClick = (
-  event: MouseEvent,
+  event: MouseEvent | TouchEvent,
   scene: THREE.Scene,
   camera: THREE.Camera,
   renderer: THREE.WebGLRenderer,
@@ -11,10 +11,15 @@ export const checkObjectClick = (
   const mouse = new THREE.Vector2();
   const raycaster = new THREE.Raycaster();
 
+  const clientX =
+    event instanceof MouseEvent ? event.clientX : event.touches?.[0]?.clientX;
+  const clientY =
+    event instanceof MouseEvent ? event.clientY : event.touches?.[0]?.clientY;
+
   // Calculate mouse position in normalized device coordinates
   const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
   // Update the picking ray with the camera and mouse position
   raycaster.setFromCamera(mouse, camera);

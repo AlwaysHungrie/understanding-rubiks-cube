@@ -57,8 +57,8 @@ export default function Foreword() {
 
   return (
     <div className="min-h-screen">
-      <div className="mx-auto px-6 pt-12 pb-4">
-        <div className="w-full flex items-start mb-4 sticky top-12">
+      <div className="mx-auto px-4 md:px-6 pt-4 md:pt-12 pb-4">
+        <div className="w-full flex items-start mb-8 md:mb-4 sticky top-4 md:top-12 gap-4 flex-col md:flex-row z-10">
           <ControlContainer className="flex">
             <div className="font-bold text-white">Foreword</div>
           </ControlContainer>
@@ -79,7 +79,7 @@ export default function Foreword() {
           />
         </div>
         <Header />
-        <div className="max-w-2xl mx-auto mt-16 px-4">
+        <div className="max-w-2xl mx-auto mt-16 px-0 md:px-0">
           <div className="space-y-4">
             {content.map((tweet, index) => (
               <div key={tweet.id} className="relative">

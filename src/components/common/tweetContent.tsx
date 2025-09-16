@@ -26,11 +26,11 @@ export const TweetContent = ({
   return (
     <div className="relative">
       {/* Tweet content */}
-      <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm transition-shadow duration-200">
+      <div className="bg-white rounded-xl border border-gray-100 p-4 md:p-6 shadow-sm transition-shadow duration-200">
         <div className="flex gap-4">
           {/* Avatar */}
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-gray-300 overflow-hidden">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2 border-gray-300 overflow-hidden">
               <Image
                 src={profile.pictureUrl}
                 alt={profile.name}
@@ -42,7 +42,7 @@ export const TweetContent = ({
 
           {/* Connecting line */}
           {!isLast && (
-            <div className="absolute left-11 top-16 w-0.5 h-100 bg-gray-300"></div>
+            <div className="absolute left-8 md:left-11 top-12 md:top-16 w-0.5 h-150 md:h-100 bg-gray-300"></div>
           )}
 
           {/* Tweet body */}

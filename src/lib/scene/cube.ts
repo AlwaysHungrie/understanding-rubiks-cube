@@ -8,9 +8,23 @@ const coordinates = [-1, 0, 1];
 const cubeCoordinates = coordinates.flatMap((x) =>
   coordinates.flatMap((y) => coordinates.map((z) => [x, y, z]))
 );
+
 export const faceNormalCoordinates = cubeCoordinates.filter(
   ([x, y, z]) => Math.abs(x) + Math.abs(y) + Math.abs(z) === 1
 );
+
+export const CENTER_PIECE_COORDINATES = cubeCoordinates
+  .filter(([x, y, z]) => Math.abs(x) + Math.abs(y) + Math.abs(z) === 1)
+  .reduce((acc, curr) => {
+    acc.add(coordinatesToKey([curr[0], curr[1], curr[2]]));
+    return acc;
+  }, new Set<string>());
+
+export const ALL_CUBE_COORDINATES = cubeCoordinates.reduce((acc, curr) => {
+  acc.add(coordinatesToKey([curr[0], curr[1], curr[2]]));
+  return acc;
+}, new Set<string>());
+
 const faceColors = {
   front: COLORS.rubik_blue,
   back: COLORS.rubik_green,
@@ -21,11 +35,20 @@ const faceColors = {
   none: COLORS.black,
 };
 
-const getCubeletFaces = (x: number, y: number, z: number) => {
+const getCubeletFaces = (
+  x: number,
+  y: number,
+  z: number,
+  isVisible: boolean
+) => {
   // right, left, top, bottom, front, back
   const faces = Array(6).fill(
     new THREE.MeshLambertMaterial({ color: faceColors.none })
   );
+
+  if (!isVisible) {
+    return faces;
+  }
 
   if (x === 1) {
     faces[0] = new THREE.MeshLambertMaterial({ color: faceColors.right });
@@ -48,8 +71,8 @@ const getCubeletFaces = (x: number, y: number, z: number) => {
   return faces;
 };
 
-const createCubelet = (x: number, y: number, z: number) => {
-  const faces = getCubeletFaces(x, y, z);
+const createCubelet = (x: number, y: number, z: number, isVisible: boolean) => {
+  const faces = getCubeletFaces(x, y, z, isVisible);
   const geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
   const cube = new THREE.Mesh(geometry, faces);
 
@@ -65,13 +88,17 @@ const createCubelet = (x: number, y: number, z: number) => {
   return cube;
 };
 
-export const drawCube = (scene: THREE.Scene) => {
+export const drawCube = (
+  scene: THREE.Scene,
+  visibleCoordinates: Set<string>
+) => {
   const cubeGroup = new THREE.Group();
   const cubelets: THREE.Mesh[] = [];
   const faceNormals: { key: string; normal: THREE.Group }[] = [];
 
   cubeCoordinates.forEach(([x, y, z]) => {
-    const cubelet = createCubelet(x, y, z);
+    const key = coordinatesToKey([x, y, z]);
+    const cubelet = createCubelet(x, y, z, visibleCoordinates.has(key));
     cubelets.push(cubelet);
     cubeGroup.add(cubelet);
   });
@@ -146,7 +173,7 @@ export const findFace = (
   cubelets: THREE.Mesh[],
   normalKey: string,
   cube: THREE.Group | null,
-  distance: typeof FACE_LEVELS[number]
+  distance: (typeof FACE_LEVELS)[number]
 ) => {
   if (!cube) return;
   const normalKeyCoordinates = normalKey.split(",").map(Number);
@@ -182,22 +209,18 @@ export const rotateFace = (
   cubelets: THREE.Mesh[],
   normalKey: string,
   cube: THREE.Group | null,
-  distance: typeof FACE_LEVELS[number]
+  distance: (typeof FACE_LEVELS)[number]
 ) => {
   if (!cube) return;
   removeHighlights(cubelets);
-  
+
   const face = findFace(cubelets, normalKey, cube, distance);
   if (!face) return;
 
   const { faceCubelets } = face;
 
   const vertices = normalKey.split(",").map(Number);
-  const axis = new THREE.Vector3(
-    vertices[0],
-    vertices[1],
-    vertices[2]
-  );
+  const axis = new THREE.Vector3(vertices[0], vertices[1], vertices[2]);
 
   // Remove any existing temporary group from previous rotations
   cube.children
@@ -207,14 +230,14 @@ export const rotateFace = (
     });
 
   // Remove cubes from main group
-  faceCubelets.forEach(({cubelet}) => {
+  faceCubelets.forEach(({ cubelet }) => {
     cube.remove(cubelet);
   });
 
   // Create a new temporary group for rotation
   const tempGroup = new THREE.Group();
   tempGroup.userData.isTemporaryGroup = true;
-  tempGroup.add(...faceCubelets.map(({cubelet}) => cubelet));
+  tempGroup.add(...faceCubelets.map(({ cubelet }) => cubelet));
 
   cube.add(tempGroup);
 
