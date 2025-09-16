@@ -33,11 +33,7 @@ export default function RootLayout({
       <body
         className={`${oswald.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ProgressProvider>
-          <div className="min-h-screen">
-            <div className="mx-auto px-6 pt-12 pb-4">{children}</div>
-          </div>
-        </ProgressProvider>
+        <ProgressProvider>{children}</ProgressProvider>
       </body>
     </html>
   );

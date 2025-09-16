@@ -33,43 +33,45 @@ const sectionInfo = [
 export default function Home() {
   const { currentSectionIndex } = useProgress();
   return (
-    <>
-      <div className="w-full relative flex items-start mb-16">
-        <ControlContainer className="flex">
-          <div className="text-white">
-            Estimated Time: <span className="font-bold">90 minutes</span>
-          </div>
-        </ControlContainer>
+    <div className="min-h-screen">
+      <div className="mx-auto px-6 pt-12 pb-4">
+        <div className="w-full relative flex items-start mb-16">
+          <ControlContainer className="flex">
+            <div className="text-white">
+              Estimated Time: <span className="font-bold">90 minutes</span>
+            </div>
+          </ControlContainer>
 
-        <MessageActions
-          message="Finish all the steps of the guide to unlock this action."
-          className="ml-auto"
-          actions={
-            <PrimaryButton disabled className="gap-2">
-              Solve Now
-              <LockIcon className="w-4 h-4" />
-            </PrimaryButton>
-          }
-        />
-      </div>
-
-      <Header />
-
-      <div className="mt-20 max-w-4xl mx-auto">
-        <div className="grid gap-8">
-          {sectionInfo.map((sectionInfo, index) => (
-            <SectionCard
-              key={index}
-              number={index}
-              sectionInfo={sectionInfo}
-              isLocked={index > currentSectionIndex}
-              isCurrent={index === currentSectionIndex}
-            />
-          ))}
+          <MessageActions
+            message="Finish all the steps of the guide to unlock this action."
+            className="ml-auto"
+            actions={
+              <PrimaryButton disabled className="gap-2">
+                Solve Now
+                <LockIcon className="w-4 h-4" />
+              </PrimaryButton>
+            }
+          />
         </div>
-      </div>
 
-      <Footer />
-    </>
+        <Header />
+
+        <div className="mt-20 max-w-4xl mx-auto">
+          <div className="grid gap-8">
+            {sectionInfo.map((sectionInfo, index) => (
+              <SectionCard
+                key={index}
+                number={index}
+                sectionInfo={sectionInfo}
+                isLocked={index > currentSectionIndex}
+                isCurrent={index === currentSectionIndex}
+              />
+            ))}
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    </div>
   );
 }

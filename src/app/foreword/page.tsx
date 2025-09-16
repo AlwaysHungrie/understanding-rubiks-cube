@@ -56,45 +56,47 @@ export default function Foreword() {
   const { setCurrentSectionIndex, likedContent, toggleStatus } = useProgress();
 
   return (
-    <>
-      <div className="w-full flex items-start mb-4 sticky top-12">
-        <ControlContainer className="flex">
-          <div className="font-bold text-white">Foreword</div>
-        </ControlContainer>
-        <MessageActions
-          message="Click the button below if you can solve one side of the cube by yourself."
-          className="ml-auto"
-          actions={
-            <PrimaryButton
-              className="gap-2"
-              onClick={() => {
-                setCurrentSectionIndex(1);
-                router.push("/");
-              }}
-            >
-              Start Guide
-            </PrimaryButton>
-          }
-        />
-      </div>
-      <Header />
-      <div className="max-w-2xl mx-auto mt-16 px-4">
-        <div className="space-y-4">
-          {content.map((tweet, index) => (
-            <div key={tweet.id} className="relative">
-              <TweetContent
-                index={index}
-                content={tweet.content}
-                isLiked={likedContent.has(tweet.id)}
-                toggleStatus={() => toggleStatus(tweet.id)}
-                isLast={index === content.length - 1}
-              />
-            </div>
-          ))}
+    <div className="min-h-screen">
+      <div className="mx-auto px-6 pt-12 pb-4">
+        <div className="w-full flex items-start mb-4 sticky top-12">
+          <ControlContainer className="flex">
+            <div className="font-bold text-white">Foreword</div>
+          </ControlContainer>
+          <MessageActions
+            message="Click the button below if you can solve one side of the cube by yourself."
+            className="ml-auto"
+            actions={
+              <PrimaryButton
+                className="gap-2"
+                onClick={() => {
+                  setCurrentSectionIndex(1);
+                  router.push("/");
+                }}
+              >
+                Start Guide
+              </PrimaryButton>
+            }
+          />
         </div>
-      </div>
+        <Header />
+        <div className="max-w-2xl mx-auto mt-16 px-4">
+          <div className="space-y-4">
+            {content.map((tweet, index) => (
+              <div key={tweet.id} className="relative">
+                <TweetContent
+                  index={index}
+                  content={tweet.content}
+                  isLiked={likedContent.has(tweet.id)}
+                  toggleStatus={() => toggleStatus(tweet.id)}
+                  isLast={index === content.length - 1}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
 
-      <Footer />
-    </>
+        <Footer />
+      </div>
+    </div>
   );
 }

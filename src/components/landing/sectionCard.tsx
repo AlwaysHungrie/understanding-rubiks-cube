@@ -62,8 +62,8 @@ export const SectionCard = ({
 
           {/* Status Icon */}
           {isCurrent ? (
-            <div className="p-3 border border-white/30 rounded-full">
-              <div className="w-4 h-4 bg-green-500 rounded-full" />
+            <div className="p-3 border-2 border-white/30 rounded-full">
+              <div className="w-4 h-4 bg-green-600 rounded-full" />
             </div>
           ) : !isLocked ? (
             <div className="p-3 rounded-full backdrop-blur-sm transition-all duration-300 bg-white/20 border border-white/30 group-hover:bg-white/30">
@@ -79,10 +79,14 @@ export const SectionCard = ({
               <LockIcon className="w-4 h-4" />
               <span className="text-sm font-medium">Locked</span>
             </div>
-          ) : (
+          ) : isCurrent ? (
             <div className="flex items-center gap-2 text-white/80 group-hover:text-white transition-colors duration-300">
               <span className="text-sm font-medium">Start</span>
               <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-white/80 group-hover:text-white transition-colors duration-300">
+              <span className="text-sm font-medium">Completed</span>
             </div>
           )}
         </div>
