@@ -2,10 +2,12 @@ import clsx from "clsx";
 
 export const MessageActions = ({
   message,
+  pointers,
   className,
   actions,
 }: {
   message: string;
+  pointers?: string[];
   className?: string;
   actions: React.ReactNode;
 }) => {
@@ -15,8 +17,15 @@ export const MessageActions = ({
         <div className="p-3 border-b border-gray-200">
           <h3 className="text-sm font-semibold text-gray-700">{message}</h3>
         </div>
+        {pointers && (
+          <ul className="p-3 list-disc list-inside text-sm text-gray-700">
+            {pointers.map((pointer) => (
+              <li key={pointer}>{pointer}</li>
+            ))}
+          </ul>
+        )}
       </div>
-      <div className="flex">{actions}</div>
+      <div className="flex gap-2">{actions}</div>
     </div>
   );
 };

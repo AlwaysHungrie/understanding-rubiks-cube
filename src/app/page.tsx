@@ -34,10 +34,10 @@ export default function Home() {
   const { currentSectionIndex } = useProgress();
   return (
     <div className="min-h-screen">
-      <div className="mx-auto px-4 md:px-6 pt-4 md:pt-12 pb-4">
+      <div className="mx-auto px-4 md:px-6 pt-4 md:pt-8 pb-4">
         <div className="w-full relative flex items-start mb-16 gap-4 flex-col md:flex-row">
           <ControlContainer className="flex">
-            <div className="text-white">
+            <div className="text-white py-2">
               Estimated Time: <span className="font-bold">90 minutes</span>
             </div>
           </ControlContainer>

@@ -39,7 +39,8 @@ const getCubeletFaces = (
   x: number,
   y: number,
   z: number,
-  isVisible: boolean
+  isVisible: boolean,
+  isModified?: number
 ) => {
   // right, left, top, bottom, front, back
   const faces = Array(6).fill(
@@ -68,11 +69,49 @@ const getCubeletFaces = (
     faces[5] = new THREE.MeshLambertMaterial({ color: faceColors.back });
   }
 
+  // flip faces if isModified is 1
+  if (isModified) {
+    for (let _ = 0; _ < isModified; _++) {
+      let foundFace: number | null = null;
+      for (let i = 0; i < faces.length; i++) {
+        if (faces[i].color.getHex() === faceColors.none) {
+          continue;
+        }
+
+        const currentFace = faces[i].color.getHex();
+        if (foundFace !== null) {
+          faces[i] = new THREE.MeshLambertMaterial({
+            color: foundFace,
+          });
+        }
+        foundFace = currentFace;
+      }
+      if (foundFace !== null) {
+        for (let i = 0; i < faces.length; i++) {
+          if (faces[i].color.getHex() === faceColors.none) {
+            continue;
+          }
+
+          faces[i] = new THREE.MeshLambertMaterial({
+            color: foundFace,
+          });
+          break;
+        }
+      }
+    }
+  }
+
   return faces;
 };
 
-const createCubelet = (x: number, y: number, z: number, isVisible: boolean) => {
-  const faces = getCubeletFaces(x, y, z, isVisible);
+const createCubelet = (
+  x: number,
+  y: number,
+  z: number,
+  isVisible: boolean,
+  isModified?: number
+) => {
+  const faces = getCubeletFaces(x, y, z, isVisible, isModified);
   const geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
   const cube = new THREE.Mesh(geometry, faces);
 
@@ -90,7 +129,8 @@ const createCubelet = (x: number, y: number, z: number, isVisible: boolean) => {
 
 export const drawCube = (
   scene: THREE.Scene,
-  visibleCoordinates: Set<string>
+  visibleCoordinates: Set<string>,
+  visibleModifiers?: Record<string, number>
 ) => {
   const cubeGroup = new THREE.Group();
   const cubelets: THREE.Mesh[] = [];
@@ -98,7 +138,13 @@ export const drawCube = (
 
   cubeCoordinates.forEach(([x, y, z]) => {
     const key = coordinatesToKey([x, y, z]);
-    const cubelet = createCubelet(x, y, z, visibleCoordinates.has(key));
+    const cubelet = createCubelet(
+      x,
+      y,
+      z,
+      visibleCoordinates.has(key),
+      visibleModifiers?.[key]
+    );
     cubelets.push(cubelet);
     cubeGroup.add(cubelet);
   });

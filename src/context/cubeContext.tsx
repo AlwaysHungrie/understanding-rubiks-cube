@@ -1,6 +1,9 @@
 "use client";
 
 import {
+  FACE_DIRECTIONS,
+  FACE_LEVELS,
+  FACE_TYPES,
   FaceMove,
   INITIAL_CUBE_ROTATION,
   SCENE_CLICKABLE_TYPES,
@@ -8,7 +11,9 @@ import {
 import {
   ALL_CUBE_COORDINATES,
   drawCube,
-  removeHighlights,
+  findFace,
+  removeHighlights as removeHighlightsHelper,
+  rotateFace,
 } from "@/lib/scene/cube";
 import { drawFloor } from "@/lib/scene/floor";
 import { setupScene } from "@/lib/scene/setup";
@@ -35,12 +40,31 @@ const CubeContext = createContext<{
     window: Window
   ) => THREE.WebGLRenderer | undefined;
   initFloor: () => void;
-  initCube: (visibleCoordinates: Set<string>) => void;
+  initCube: (visibleCoordinates: Set<string>, visibleModifiers?: Record<string, number>) => void;
+  cubelets: THREE.Mesh[] | null;
+  faceGroup: THREE.Group | null;
+  primaryNormals: { front: string; top: string; left: string };
+  moveFace: (
+    faceType: (typeof FACE_TYPES)[number],
+    faceLevel: (typeof FACE_LEVELS)[number],
+    direction: (typeof FACE_DIRECTIONS)[number]
+  ) => Promise<void>;
+  removeHighlights: () => void;
+  hightlightFace: (
+    faceType: (typeof FACE_TYPES)[number],
+    faceLevel: (typeof FACE_LEVELS)[number]
+  ) => void;
 }>({
   cube: null,
   initScene: () => undefined,
   initFloor: () => {},
-  initCube: (visibleCoordinates: Set<string>) => {},
+  initCube: (visibleCoordinates: Set<string>, visibleModifiers?: Record<string, number>) => {},
+  cubelets: null,
+  faceGroup: null,
+  primaryNormals: { front: "", top: "", left: "" },
+  moveFace: () => Promise.resolve(),
+  removeHighlights: () => {},
+  hightlightFace: () => {},
 });
 
 export default function CubeContextProvider({
@@ -230,7 +254,7 @@ export default function CubeContextProvider({
 
   const rotateCube = useCallback(async (rotation: { x: number; y: number }) => {
     if (cubeletsRef.current) {
-      removeHighlights(cubeletsRef.current);
+      removeHighlightsHelper(cubeletsRef.current);
     }
     cubeRotationTargetRef.current = rotation;
     cubeVelocityRef.current = { x: 0, y: 0 };
@@ -249,7 +273,7 @@ export default function CubeContextProvider({
       const { scene, camera, renderer } = setupScene(window);
       renderer.setAnimationLoop(animate);
 
-      // remove all children from sceneContainerRef.current
+      // remove all canvas elements from sceneContainerRef.current
       while (sceneContainerRef.current.firstChild) {
         sceneContainerRef.current.removeChild(
           sceneContainerRef.current.firstChild
@@ -280,7 +304,7 @@ export default function CubeContextProvider({
     drawFloor(sceneRef.current, () => rotateCube(INITIAL_CUBE_ROTATION));
   }, [rotateCube]);
 
-  const initCube = useCallback((visibleCoordinates: Set<string>) => {
+  const initCube = useCallback((visibleCoordinates: Set<string>, visibleModifiers?: Record<string, number>) => {
     const scene = sceneRef.current;
     if (!scene) return;
 
@@ -292,7 +316,8 @@ export default function CubeContextProvider({
 
     const { cubelets, cubeGroup, faceNormals } = drawCube(
       scene,
-      visibleCoordinates
+      visibleCoordinates,
+      visibleModifiers
     );
     cubeletsRef.current = cubelets;
     cubeRef.current = cubeGroup;
@@ -305,6 +330,100 @@ export default function CubeContextProvider({
       );
     }
   }, []);
+
+  const moveFace = useCallback(
+    async (
+      faceType: (typeof FACE_TYPES)[number],
+      faceLevel: (typeof FACE_LEVELS)[number],
+      direction: (typeof FACE_DIRECTIONS)[number]
+    ) => {
+      if (cubeletsRef.current) {
+        removeHighlightsHelper(cubeletsRef.current);
+      }
+      if (faceGroupRef.current) return;
+      if (cubeletsRef.current && cubeRef.current) {
+        const rotationResult = rotateFace(
+          cubeletsRef.current,
+          primaryNormalsRef.current[faceType],
+          cubeRef.current,
+          faceLevel
+        );
+        if (!rotationResult) return;
+
+        const currentCubeRotation = {
+          x: cubeRef.current.rotation.x,
+          y: cubeRef.current.rotation.y,
+        };
+
+        const { tempGroup, axis } = rotationResult;
+
+        faceVelocityRef.current = 0;
+        axis.multiplyScalar(direction);
+        faceRotationAxisRef.current = axis;
+        faceGroupRef.current = tempGroup;
+
+        setMoves((prevMoves) => {
+          if (prevMoves.length === 0)
+            return [
+              {
+                face: faceType,
+                level: faceLevel,
+                direction,
+                rotation: currentCubeRotation,
+              },
+            ];
+
+          const lastMove = prevMoves[prevMoves.length - 1];
+
+          if (
+            lastMove.face === faceType &&
+            lastMove.level === faceLevel &&
+            lastMove.direction === -1 * direction
+          ) {
+            return prevMoves.slice(0, -1);
+          }
+          return [
+            ...prevMoves,
+            {
+              face: faceType,
+              level: faceLevel,
+              direction,
+              rotation: currentCubeRotation,
+            },
+          ];
+        });
+
+        await new Promise((resolve) => {
+          onMoveCompleteCallbackRef.current = () => resolve(true);
+        });
+      }
+    },
+    []
+  );
+
+  const removeHighlights = useCallback(() => {
+    if (cubeletsRef.current) {
+      removeHighlightsHelper(cubeletsRef.current);
+    }
+  }, []);
+
+  const hightlightFace = useCallback(
+    (
+      faceType: (typeof FACE_TYPES)[number],
+      faceLevel: (typeof FACE_LEVELS)[number]
+    ) => {
+      if (faceGroupRef.current) return;
+      if (cubeletsRef.current && cubeRef.current) {
+        findFace(
+          cubeletsRef.current,
+          primaryNormalsRef.current[faceType],
+          cubeRef.current,
+          faceLevel
+        );
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     return () => {
@@ -323,7 +442,18 @@ export default function CubeContextProvider({
 
   return (
     <CubeContext.Provider
-      value={{ cube: cubeRef.current, initScene, initFloor, initCube }}
+      value={{
+        cube: cubeRef.current,
+        initScene,
+        initFloor,
+        initCube,
+        cubelets: cubeletsRef.current,
+        faceGroup: faceGroupRef.current,
+        primaryNormals: primaryNormalsRef.current,
+        moveFace,
+        removeHighlights,
+        hightlightFace,
+      }}
     >
       {children}
     </CubeContext.Provider>

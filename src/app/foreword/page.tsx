@@ -57,10 +57,10 @@ export default function Foreword() {
 
   return (
     <div className="min-h-screen">
-      <div className="mx-auto px-4 md:px-6 pt-4 md:pt-12 pb-4">
+      <div className="mx-auto px-4 md:px-6 pt-4 md:pt-8 pb-4">
         <div className="w-full flex items-start mb-8 md:mb-4 sticky top-4 md:top-12 gap-4 flex-col md:flex-row z-10">
           <ControlContainer className="flex">
-            <div className="font-bold text-white">Foreword</div>
+            <div className="font-bold text-white py-2">Foreword</div>
           </ControlContainer>
           <MessageActions
             message="Click the button below if you can solve one side of the cube by yourself."
