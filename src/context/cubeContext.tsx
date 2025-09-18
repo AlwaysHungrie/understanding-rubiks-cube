@@ -40,7 +40,7 @@ const CubeContext = createContext<{
     sceneContainerRef: React.RefObject<HTMLDivElement | null>,
     window: Window
   ) => THREE.WebGLRenderer | undefined;
-  initFloor: () => void;
+  initFloor: (allowShuffle?: boolean) => void;
   initCube: (
     visibleCoordinates: Set<string>,
     visibleModifiers?: Record<string, number>,
@@ -67,6 +67,7 @@ const CubeContext = createContext<{
   reverseMoves: (moves: FaceMove[]) => Promise<void>;
   rotateCube: (rotation: { x: number; y: number }) => Promise<void>;
   moves: FaceMove[];
+  shuffleCube: (moves: number) => Promise<void>;
 }>({
   cube: null,
   initScene: () => undefined,
@@ -81,6 +82,7 @@ const CubeContext = createContext<{
   reverseMoves: () => Promise.resolve(),
   rotateCube: () => Promise.resolve(),
   moves: [],
+  shuffleCube: () => Promise.resolve(),
 });
 
 export default function CubeContextProvider({
@@ -100,6 +102,7 @@ export default function CubeContextProvider({
 
   const isDraggingRef = useRef(false);
   const previousMousePositionRef = useRef({ x: 0, y: 0 });
+  const previousClickPositionRef = useRef({ x: 0, y: 0 });
 
   // for reseting cube to original position
   const cubeRotationTargetRef = useRef<{ x: number; y: number } | null>(null);
@@ -206,6 +209,10 @@ export default function CubeContextProvider({
       x: clientX,
       y: clientY,
     };
+    previousClickPositionRef.current = {
+      x: clientX,
+      y: clientY,
+    };
   }, []);
 
   const handleMouseMove = useCallback((event: MouseEvent | TouchEvent) => {
@@ -222,16 +229,17 @@ export default function CubeContextProvider({
     const cube = cubeRef.current;
 
     // if cube is flipped (rotated ~180° around X-axis), invert deltaX for intuitive control
-    const normalizedXRotation =
-      ((cube.rotation.x % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-    if (
-      normalizedXRotation > Math.PI / 2 &&
-      normalizedXRotation < (3 * Math.PI) / 2
-    ) {
-      deltaX = -deltaX;
-    }
+    // const normalizedXRotation =
+    //   ((cube.rotation.x % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    // if (
+    //   normalizedXRotation > Math.PI / 2 &&
+    //   normalizedXRotation < (3 * Math.PI) / 2
+    // ) {
+    //   deltaX = -deltaX;
+    // }
     cube.rotation.y += deltaX * 0.01;
     cube.rotation.x += deltaY * 0.01;
+
     // cube.rotation.x = Math.max(
     //   Math.min(cube.rotation.x + deltaY * 0.01, maximumYRotation),
     //   -maximumYRotation
@@ -246,18 +254,33 @@ export default function CubeContextProvider({
   const handleMouseUp = useCallback((event: MouseEvent | TouchEvent) => {
     if (!faceNormalsRef.current || !cubeRef.current) return;
 
-    isDraggingRef.current = false;
+    const clientX =
+      event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const clientY =
+      event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+
+    const previousClientX = previousClickPositionRef.current.x;
+    const previousClientY = previousClickPositionRef.current.y;
+
+    const moveDistance =
+      Math.abs(clientX - previousClientX) + Math.abs(clientY - previousClientY);
+    console.log("moveDistance", moveDistance);
 
     // Check for 3D object clicks using raycasting
     if (sceneRef.current && cameraRef.current && rendererRef.current) {
-      checkObjectClick(
-        event,
-        sceneRef.current,
-        cameraRef.current,
-        rendererRef.current,
-        SCENE_CLICKABLE_TYPES
-      );
+      console.log("checkObjectClick", isDraggingRef.current);
+      if (moveDistance < 1) {
+        checkObjectClick(
+          event,
+          sceneRef.current,
+          cameraRef.current,
+          rendererRef.current,
+          SCENE_CLICKABLE_TYPES
+        );
+      }
     }
+
+    isDraggingRef.current = false;
 
     if (faceNormalsRef.current && cubeRef.current) {
       primaryNormalsRef.current = findPrimaryNormals(
@@ -314,11 +337,6 @@ export default function CubeContextProvider({
     },
     [animate, handleMouseDown, handleMouseMove, handleMouseUp]
   );
-
-  const initFloor = useCallback(() => {
-    if (!sceneRef.current) return;
-    drawFloor(sceneRef.current, () => rotateCube(INITIAL_CUBE_ROTATION));
-  }, [rotateCube]);
 
   const initCube = useCallback(
     (
@@ -473,6 +491,33 @@ export default function CubeContextProvider({
     [moveFace, rotateCube]
   );
 
+  const shuffleCube = useCallback(
+    async (moves: number) => {
+      for (let i = 0; i < moves; i++) {
+        const randomFaceType =
+          FACE_TYPES[Math.floor(Math.random() * FACE_TYPES.length)];
+        const randomFaceLevel =
+          FACE_LEVELS[Math.floor(Math.random() * FACE_LEVELS.length)];
+        const randomDirection =
+          FACE_DIRECTIONS[Math.floor(Math.random() * FACE_DIRECTIONS.length)];
+        await moveFace(randomFaceType, randomFaceLevel, randomDirection, true);
+      }
+    },
+    [moveFace]
+  );
+
+  const initFloor = useCallback(
+    (allowShuffle?: boolean) => {
+      if (!sceneRef.current) return;
+      drawFloor(
+        sceneRef.current,
+        () => rotateCube(INITIAL_CUBE_ROTATION),
+        allowShuffle ? () => shuffleCube(20) : undefined
+      );
+    },
+    [rotateCube, shuffleCube]
+  );
+
   // Helper function to dispose of any Three.js object and its children
   const disposeObject = useCallback((object: THREE.Object3D) => {
     object.traverse((child) => {
@@ -558,6 +603,7 @@ export default function CubeContextProvider({
         reverseMoves,
         rotateCube,
         moves,
+        shuffleCube,
       }}
     >
       {children}

@@ -8,12 +8,12 @@ import { MessageActions } from "@/components/common/messageActions";
 import { PrimaryButton } from "@/components/common/primaryButton";
 import { LockIcon } from "lucide-react";
 import { useProgress } from "@/context/progressContext";
+import { useRouter } from "next/navigation";
 
 const sectionInfo = [
   {
     label: "Foreword: This is guide is not clickbait",
-    description:
-      "Rubik's Cube is a logical puzzle and not a memorization game",
+    description: "Rubik's Cube is a logical puzzle and not a memorization game",
     link: "/foreword",
     backgroundColor: "#EBB998",
     backgroundImageUrl:
@@ -62,6 +62,7 @@ const sectionInfo = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const { currentSectionIndex } = useProgress();
   return (
     <div className="min-h-screen">
@@ -77,9 +78,19 @@ export default function Home() {
             message="Finish all the steps of the guide to unlock this action."
             className="ml-auto"
             actions={
-              <PrimaryButton disabled className="gap-2">
+              <PrimaryButton
+                disabled={currentSectionIndex < sectionInfo.length - 1}
+                className="gap-2"
+                onClick={() => {
+                  if (currentSectionIndex < sectionInfo.length - 1) return;
+
+                  router.push("/solve");
+                }}
+              >
                 Solve Now
-                <LockIcon className="w-4 h-4" />
+                {currentSectionIndex < sectionInfo.length - 1 && (
+                  <LockIcon className="w-4 h-4" />
+                )}
               </PrimaryButton>
             }
           />
