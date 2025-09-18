@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { COLORS, CUBE_SIZE, CUBE_SPACING, FACE_LEVELS } from "../constants";
 import { drawLine } from "../threejsHelpers/line";
 import { coordinatesToKey } from "../threejsHelpers/helpers";
+import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
+import { Font } from "three/addons/loaders/FontLoader.js";
 
 const coordinates = [-1, 0, 1];
 const cubeCoordinates = coordinates.flatMap((x) =>
@@ -109,7 +111,9 @@ const createCubelet = (
   y: number,
   z: number,
   isVisible: boolean,
-  isModified?: number
+  isModified?: number,
+  font?: Font,
+  label?: { text: string; position: THREE.Vector3, rotation: THREE.Vector3 }
 ) => {
   const faces = getCubeletFaces(x, y, z, isVisible, isModified);
   const geometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
@@ -124,13 +128,51 @@ const createCubelet = (
   cube.castShadow = true;
   cube.receiveShadow = true;
 
+  if (font && label) {
+    const textGeometry = new TextGeometry(label.text, {
+      font: font,
+      size: 0.9,
+      depth: 0,
+      curveSegments: 12,
+      bevelEnabled: true,
+      bevelThickness: 0.01,
+      bevelSize: 0.01,
+      bevelOffset: 0,
+      bevelSegments: 5,
+    });
+
+    // Center the text geometry
+    textGeometry.computeBoundingBox();
+    const textWidth =
+      textGeometry.boundingBox!.max.x - textGeometry.boundingBox!.min.x;
+    const textHeight =
+      textGeometry.boundingBox!.max.y - textGeometry.boundingBox!.min.y;
+    textGeometry.translate(-textWidth / 2, -textHeight / 2, 0);
+
+    const textMaterial = new THREE.MeshPhongMaterial({
+      color: COLORS.black,
+      shininess: 30,
+    });
+    const text = new THREE.Mesh(textGeometry, textMaterial);
+    text.position.set(label.position.x, label.position.y, label.position.z);
+    text.rotation.set(label.rotation.x, label.rotation.y, label.rotation.z);
+    
+    // Store references for cleanup
+    text.userData.textGeometry = textGeometry;
+    text.userData.textMaterial = textMaterial;
+    
+    cube.add(text);
+  }
+
   return cube;
 };
 
 export const drawCube = (
   scene: THREE.Scene,
   visibleCoordinates: Set<string>,
-  visibleModifiers?: Record<string, number>
+  visibleModifiers?: Record<string, number>,
+  font?: Font,
+  labels?: Record<string, { text: string; position: THREE.Vector3; rotation: THREE.Vector3 }>
 ) => {
   const cubeGroup = new THREE.Group();
   const cubelets: THREE.Mesh[] = [];
@@ -143,7 +185,9 @@ export const drawCube = (
       y,
       z,
       visibleCoordinates.has(key),
-      visibleModifiers?.[key]
+      visibleModifiers?.[key],
+      font,
+      labels?.[key]
     );
     cubelets.push(cubelet);
     cubeGroup.add(cubelet);

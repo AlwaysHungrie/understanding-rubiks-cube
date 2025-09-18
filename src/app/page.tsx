@@ -3,7 +3,6 @@
 import Footer from "@/components/landing/footer";
 import { Header } from "@/components/landing/header";
 import { SectionCard } from "@/components/landing/sectionCard";
-import { useState } from "react";
 import { ControlContainer } from "@/components/common/controlContainer";
 import { MessageActions } from "@/components/common/messageActions";
 import { PrimaryButton } from "@/components/common/primaryButton";
@@ -27,6 +26,38 @@ const sectionInfo = [
     backgroundColor: "#BEC0B7",
     backgroundImageUrl:
       "https://unsplash.com/photos/aYPGdQBoq5Y/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzU3ODA2Mjc1fA&force=true&w=1920",
+  },
+  {
+    label: "Moving Edges",
+    description: "Moving edges of the Rubik's Cube",
+    link: "/algorithm/moving-edges",
+    backgroundColor: "#BEC0B7",
+    backgroundImageUrl:
+      "https://unsplash.com/photos/OZACaaUskhg/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzU4MTgxNTk1fA&force=true&w=1920",
+  },
+  {
+    label: "Flipping Edges (Hardest)",
+    description: "Flipping edge pieces",
+    link: "/algorithm/flipping-edges",
+    backgroundColor: "#BEC0B7",
+    backgroundImageUrl:
+      "https://unsplash.com/photos/gg3UWRI7dYU/download?force=true&w=1920",
+  },
+  {
+    label: "Moving Corner Pieces",
+    description: "Moving corner pieces of the Rubik's Cube",
+    link: "/algorithm/moving-corners",
+    backgroundColor: "#BEC0B7",
+    backgroundImageUrl:
+      "https://unsplash.com/photos/geC1KN701Lw/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzU4MTgzMDEwfA&force=true&w=1920",
+  },
+  {
+    label: "Flipping Corner Pieces",
+    description: "Flipping corner pieces",
+    link: "/algorithm/flipping-corners",
+    backgroundColor: "#BEC0B7",
+    backgroundImageUrl:
+      "https://unsplash.com/photos/LndrVp94opE/download?force=true&w=1920",
   },
 ];
 

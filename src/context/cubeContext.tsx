@@ -32,6 +32,7 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
+import { Font } from "three/addons/loaders/FontLoader.js";
 
 const CubeContext = createContext<{
   cube: THREE.Group | null;
@@ -40,31 +41,46 @@ const CubeContext = createContext<{
     window: Window
   ) => THREE.WebGLRenderer | undefined;
   initFloor: () => void;
-  initCube: (visibleCoordinates: Set<string>, visibleModifiers?: Record<string, number>) => void;
+  initCube: (
+    visibleCoordinates: Set<string>,
+    visibleModifiers?: Record<string, number>,
+    font?: Font,
+    labels?: Record<
+      string,
+      { text: string; position: THREE.Vector3; rotation: THREE.Vector3 }
+    >
+  ) => void;
   cubelets: THREE.Mesh[] | null;
   faceGroup: THREE.Group | null;
   primaryNormals: { front: string; top: string; left: string };
   moveFace: (
     faceType: (typeof FACE_TYPES)[number],
     faceLevel: (typeof FACE_LEVELS)[number],
-    direction: (typeof FACE_DIRECTIONS)[number]
+    direction: (typeof FACE_DIRECTIONS)[number],
+    skipSaveMove?: boolean
   ) => Promise<void>;
   removeHighlights: () => void;
   hightlightFace: (
     faceType: (typeof FACE_TYPES)[number],
     faceLevel: (typeof FACE_LEVELS)[number]
   ) => void;
+  reverseMoves: (moves: FaceMove[]) => Promise<void>;
+  rotateCube: (rotation: { x: number; y: number }) => Promise<void>;
+  moves: FaceMove[];
 }>({
   cube: null,
   initScene: () => undefined,
   initFloor: () => {},
-  initCube: (visibleCoordinates: Set<string>, visibleModifiers?: Record<string, number>) => {},
+  initCube: () => {},
   cubelets: null,
   faceGroup: null,
   primaryNormals: { front: "", top: "", left: "" },
   moveFace: () => Promise.resolve(),
   removeHighlights: () => {},
   hightlightFace: () => {},
+  reverseMoves: () => Promise.resolve(),
+  rotateCube: () => Promise.resolve(),
+  moves: [],
 });
 
 export default function CubeContextProvider({
@@ -304,38 +320,53 @@ export default function CubeContextProvider({
     drawFloor(sceneRef.current, () => rotateCube(INITIAL_CUBE_ROTATION));
   }, [rotateCube]);
 
-  const initCube = useCallback((visibleCoordinates: Set<string>, visibleModifiers?: Record<string, number>) => {
-    const scene = sceneRef.current;
-    if (!scene) return;
+  const initCube = useCallback(
+    (
+      visibleCoordinates: Set<string>,
+      visibleModifiers?: Record<string, number>,
+      font?: Font,
+      labels?: Record<
+        string,
+        { text: string; position: THREE.Vector3; rotation: THREE.Vector3 }
+      >
+    ) => {
+      const scene = sceneRef.current;
+      if (!scene) return;
 
-    // remove cube if it exists
-    if (cubeRef.current) {
-      cubeRef.current.clear();
-      scene.remove(cubeRef.current);
-    }
+      // Clean up existing cube and its resources
+      if (cubeRef.current) {
+        disposeObject(cubeRef.current);
+        scene.remove(cubeRef.current);
+      }
 
-    const { cubelets, cubeGroup, faceNormals } = drawCube(
-      scene,
-      visibleCoordinates,
-      visibleModifiers
-    );
-    cubeletsRef.current = cubelets;
-    cubeRef.current = cubeGroup;
-    faceNormalsRef.current = faceNormals;
-    if (faceNormalsRef.current && cubeRef.current) {
-      primaryNormalsRef.current = findPrimaryNormals(
-        faceNormalsRef.current,
-        cubeRef.current,
-        primaryNormalsRef.current
+      setMoves([]);
+      const { cubelets, cubeGroup, faceNormals } = drawCube(
+        scene,
+        visibleCoordinates,
+        visibleModifiers,
+        font,
+        labels
       );
-    }
-  }, []);
+      cubeletsRef.current = cubelets;
+      cubeRef.current = cubeGroup;
+      faceNormalsRef.current = faceNormals;
+      if (faceNormalsRef.current && cubeRef.current) {
+        primaryNormalsRef.current = findPrimaryNormals(
+          faceNormalsRef.current,
+          cubeRef.current,
+          primaryNormalsRef.current
+        );
+      }
+    },
+    []
+  );
 
   const moveFace = useCallback(
     async (
       faceType: (typeof FACE_TYPES)[number],
       faceLevel: (typeof FACE_LEVELS)[number],
-      direction: (typeof FACE_DIRECTIONS)[number]
+      direction: (typeof FACE_DIRECTIONS)[number],
+      skipSaveMove?: boolean
     ) => {
       if (cubeletsRef.current) {
         removeHighlightsHelper(cubeletsRef.current);
@@ -362,9 +393,29 @@ export default function CubeContextProvider({
         faceRotationAxisRef.current = axis;
         faceGroupRef.current = tempGroup;
 
-        setMoves((prevMoves) => {
-          if (prevMoves.length === 0)
+        if (!skipSaveMove) {
+          setMoves((prevMoves) => {
+            if (prevMoves.length === 0)
+              return [
+                {
+                  face: faceType,
+                  level: faceLevel,
+                  direction,
+                  rotation: currentCubeRotation,
+                },
+              ];
+
+            const lastMove = prevMoves[prevMoves.length - 1];
+
+            if (
+              lastMove.face === faceType &&
+              lastMove.level === faceLevel &&
+              lastMove.direction === -1 * direction
+            ) {
+              return prevMoves.slice(0, -1);
+            }
             return [
+              ...prevMoves,
               {
                 face: faceType,
                 level: faceLevel,
@@ -372,26 +423,8 @@ export default function CubeContextProvider({
                 rotation: currentCubeRotation,
               },
             ];
-
-          const lastMove = prevMoves[prevMoves.length - 1];
-
-          if (
-            lastMove.face === faceType &&
-            lastMove.level === faceLevel &&
-            lastMove.direction === -1 * direction
-          ) {
-            return prevMoves.slice(0, -1);
-          }
-          return [
-            ...prevMoves,
-            {
-              face: faceType,
-              level: faceLevel,
-              direction,
-              rotation: currentCubeRotation,
-            },
-          ];
-        });
+          });
+        }
 
         await new Promise((resolve) => {
           onMoveCompleteCallbackRef.current = () => resolve(true);
@@ -425,20 +458,89 @@ export default function CubeContextProvider({
     []
   );
 
-  useEffect(() => {
-    return () => {
-      const renderer = rendererRef.current;
-      if (!renderer) return;
-      const canvas = renderer.domElement;
+  const reverseMoves = useCallback(
+    async (moves: FaceMove[]) => {
+      const movesCopy = [...moves].reverse();
+      for (const move of movesCopy) {
+        const direction = move.direction === 1 ? -1 : 1;
+        await rotateCube(move.rotation);
+        await moveFace(move.face, move.level, direction);
+      }
+      if (cubeletsRef.current) {
+        removeHighlightsHelper(cubeletsRef.current);
+      }
+    },
+    [moveFace, rotateCube]
+  );
+
+  // Helper function to dispose of any Three.js object and its children
+  const disposeObject = useCallback((object: THREE.Object3D) => {
+    object.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        if (child.geometry) {
+          child.geometry.dispose();
+        }
+        if (Array.isArray(child.material)) {
+          child.material.forEach((material) => {
+            if (material instanceof THREE.Material) {
+              material.dispose();
+            }
+          });
+        } else if (child.material instanceof THREE.Material) {
+          child.material.dispose();
+        }
+      }
+    });
+  }, []);
+
+  // Cleanup function for Three.js resources
+  const cleanupThreeJS = useCallback(() => {
+    // Stop animation loop
+    if (rendererRef.current) {
+      rendererRef.current.setAnimationLoop(null);
+    }
+
+    // Remove event listeners
+    if (rendererRef.current) {
+      const canvas = rendererRef.current.domElement;
       canvas.removeEventListener("mousedown", handleMouseDown);
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseup", handleMouseUp);
-
       canvas.removeEventListener("touchstart", handleMouseDown);
       canvas.removeEventListener("touchmove", handleMouseMove);
       canvas.removeEventListener("touchend", handleMouseUp);
-    };
-  }, [initScene, handleMouseDown, handleMouseMove, handleMouseUp]);
+    }
+
+    // Dispose of cube and all its children
+    if (cubeRef.current) {
+      disposeObject(cubeRef.current);
+      if (sceneRef.current) {
+        sceneRef.current.remove(cubeRef.current);
+      }
+    }
+
+    // Clear scene (this removes all remaining objects)
+    if (sceneRef.current) {
+      sceneRef.current.clear();
+    }
+
+    // Dispose of renderer
+    if (rendererRef.current) {
+      rendererRef.current.dispose();
+    }
+
+    // Clear refs
+    cubeRef.current = null;
+    cubeletsRef.current = null;
+    faceNormalsRef.current = null;
+    sceneRef.current = null;
+    cameraRef.current = null;
+    rendererRef.current = null;
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, disposeObject]);
+
+  useEffect(() => {
+    return cleanupThreeJS;
+  }, [cleanupThreeJS]);
 
   return (
     <CubeContext.Provider
@@ -453,6 +555,9 @@ export default function CubeContextProvider({
         moveFace,
         removeHighlights,
         hightlightFace,
+        reverseMoves,
+        rotateCube,
+        moves,
       }}
     >
       {children}

@@ -26,7 +26,9 @@ export const SectionCard = ({
   return (
     <Link
       className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${
-        isLocked ? "shadow-lg" : "shadow-xl hover:shadow-2xl"
+        isLocked
+          ? "shadow-lg pointer-events-none"
+          : "shadow-xl hover:shadow-2xl"
       }`}
       style={{
         backgroundColor: isLocked ? "#444444" : backgroundColor,
@@ -57,7 +59,9 @@ export const SectionCard = ({
             <h3 className="font-oswald font-bold text-2xl md:text-3xl text-white drop-shadow-2xl">
               {label}
             </h3>
-            <p className="text-white/80 font-medium mb-2 text-sm md:text-base">{description}</p>
+            <p className="text-white/80 font-medium mb-2 text-sm md:text-base">
+              {description}
+            </p>
           </div>
 
           {/* Status Icon */}

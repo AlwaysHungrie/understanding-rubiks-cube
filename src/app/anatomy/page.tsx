@@ -27,7 +27,7 @@ const content = [
     pointers: [
       "They always remain in the center.",
       "If a Center piece is moved, just rotate the entire cube back to its position.",
-      "So it is safe to assume Center pieces are fixed, we only need to place remaining pieces around them.",
+      "It is safe to assume Center pieces are fixed, we only need to place remaining pieces around them.",
     ],
     previousActionLabel: "Go back",
     nextActionLabel: "I understand",
@@ -45,7 +45,7 @@ const content = [
   {
     main: "Consider the Corner pieces",
     pointers: [
-      "An Corner piece has 3 colored faces.",
+      "A Corner piece has 3 colored faces.",
       "Again, it can be in correct position but flipped.",
       "This piece however can have 3 different orientations, only one of which is correct.",
     ],
