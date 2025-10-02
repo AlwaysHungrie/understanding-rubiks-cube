@@ -4,7 +4,7 @@ import { Fragment } from "react";
 
 const profile = {
   pictureUrl:
-    "https://upload.wikimedia.org/wikipedia/commons/6/61/Rubiks_cube_solved.jpg",
+    "/cube.jpg",
   name: "Rubik's Cube",
   username: "@rubikscube",
   time: "2h",

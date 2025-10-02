@@ -1,6 +1,5 @@
 import { LockIcon, CheckIcon, ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 
 export type SectionInfo = {
   label: string;
@@ -36,16 +35,14 @@ export const SectionCard = ({
       href={link}
     >
       {/* Background Image */}
-      <Image
+      <img
         src={backgroundImageUrl}
         alt={label}
-        fill
-        className={`object-cover transition-all duration-500 group-hover:scale-110 ${
+        className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
           isLocked
             ? "brightness-[0.7] grayscale-[80%] opacity-40"
             : "brightness-100 opacity-100"
         }`}
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
 
       {/* Content */}
