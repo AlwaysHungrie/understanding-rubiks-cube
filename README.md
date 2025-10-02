@@ -1,6 +1,6 @@
 # Understanding Rubik's Cube
 
-DEMO: [https://rubiks-cube.dhairyashah98.workers.dev/](https://rubiks-cube.dhairyashah98.workers.dev/)
+DEMO: [https://cube.pineappl.xyz](https://cube.pineappl.xyz)
 
 This project features a Rubik's Cube and an interactive guide using Three.js.
 
