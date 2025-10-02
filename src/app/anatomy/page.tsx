@@ -74,12 +74,12 @@ export default function Home() {
     if (!renderer) return;
 
     initFloor();
-    initCube(visibleCoordinates);
+    initCube(ALL_CUBE_COORDINATES);
   }, [initScene, initFloor, initCube]);
 
   useEffect(() => {
     initCube(visibleCoordinates, visibleModifiers);
-  }, [visibleCoordinates, initCube]);
+  }, [visibleCoordinates, visibleModifiers, initCube]);
 
   useEffect(() => {
     if (currentStep === 0) {

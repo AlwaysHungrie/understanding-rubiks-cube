@@ -39,7 +39,7 @@ export const ALGORITHM_CONTENT = {
           "We can then reverse the moves made to restore bottom layers.",
         ],
         secondaryActionLabel: "Move Top layer",
-        nextActionLabel: "Done",
+        nextActionLabel: "Reverse Moves",
       },
       {
         main: "Swapping Edge pieces",
@@ -92,7 +92,7 @@ export const ALGORITHM_CONTENT = {
           "We can then reverse the moves made to restore bottom layers.",
         ],
         secondaryActionLabel: "Move Top layer",
-        nextActionLabel: "Done",
+        nextActionLabel: "Reverse Moves",
       },
       {
         main: "Flipping Edge pieces",
@@ -140,7 +140,7 @@ export const ALGORITHM_CONTENT = {
           "We can then reverse the moves made to restore bottom layers.",
         ],
         secondaryActionLabel: "Move Top layer",
-        nextActionLabel: "Done",
+        nextActionLabel: "Reverse Moves",
       },
       {
         main: "Swapping Corner pieces",
@@ -193,7 +193,7 @@ export const ALGORITHM_CONTENT = {
           "We can then reverse the moves made to restore bottom layers.",
         ],
         secondaryActionLabel: "Move Top layer",
-        nextActionLabel: "Done",
+        nextActionLabel: "Reverse Moves",
       },
       {
         main: "Flipping Corner pieces",

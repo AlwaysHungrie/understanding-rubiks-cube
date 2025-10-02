@@ -9,7 +9,6 @@ import {
   SCENE_CLICKABLE_TYPES,
 } from "@/lib/constants";
 import {
-  ALL_CUBE_COORDINATES,
   drawCube,
   findFace,
   removeHighlights as removeHighlightsHelper,
@@ -148,8 +147,7 @@ export default function CubeContextProvider({
         if (faceNormalsRef.current) {
           primaryNormalsRef.current = findPrimaryNormals(
             faceNormalsRef.current,
-            cube,
-            primaryNormalsRef.current
+            cube
           );
         }
         if (onRotationCompleteCallbackRef.current) {
@@ -223,7 +221,7 @@ export default function CubeContextProvider({
     const clientY =
       event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
 
-    let deltaX = clientX - previousMousePositionRef.current.x;
+    const deltaX = clientX - previousMousePositionRef.current.x;
     const deltaY = clientY - previousMousePositionRef.current.y;
 
     const cube = cubeRef.current;
@@ -264,11 +262,9 @@ export default function CubeContextProvider({
 
     const moveDistance =
       Math.abs(clientX - previousClientX) + Math.abs(clientY - previousClientY);
-    console.log("moveDistance", moveDistance);
 
     // Check for 3D object clicks using raycasting
     if (sceneRef.current && cameraRef.current && rendererRef.current) {
-      console.log("checkObjectClick", isDraggingRef.current);
       if (moveDistance < 1) {
         checkObjectClick(
           event,
@@ -285,8 +281,7 @@ export default function CubeContextProvider({
     if (faceNormalsRef.current && cubeRef.current) {
       primaryNormalsRef.current = findPrimaryNormals(
         faceNormalsRef.current,
-        cubeRef.current,
-        primaryNormalsRef.current
+        cubeRef.current
       );
     }
   }, []);
@@ -338,6 +333,26 @@ export default function CubeContextProvider({
     [animate, handleMouseDown, handleMouseMove, handleMouseUp]
   );
 
+  // Helper function to dispose of any Three.js object and its children
+  const disposeObject = useCallback((object: THREE.Object3D) => {
+    object.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        if (child.geometry) {
+          child.geometry.dispose();
+        }
+        if (Array.isArray(child.material)) {
+          child.material.forEach((material) => {
+            if (material instanceof THREE.Material) {
+              material.dispose();
+            }
+          });
+        } else if (child.material instanceof THREE.Material) {
+          child.material.dispose();
+        }
+      }
+    });
+  }, []);
+
   const initCube = useCallback(
     (
       visibleCoordinates: Set<string>,
@@ -371,12 +386,11 @@ export default function CubeContextProvider({
       if (faceNormalsRef.current && cubeRef.current) {
         primaryNormalsRef.current = findPrimaryNormals(
           faceNormalsRef.current,
-          cubeRef.current,
-          primaryNormalsRef.current
+          cubeRef.current
         );
       }
     },
-    []
+    [disposeObject]
   );
 
   const moveFace = useCallback(
@@ -517,26 +531,6 @@ export default function CubeContextProvider({
     },
     [rotateCube, shuffleCube]
   );
-
-  // Helper function to dispose of any Three.js object and its children
-  const disposeObject = useCallback((object: THREE.Object3D) => {
-    object.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        if (child.geometry) {
-          child.geometry.dispose();
-        }
-        if (Array.isArray(child.material)) {
-          child.material.forEach((material) => {
-            if (material instanceof THREE.Material) {
-              material.dispose();
-            }
-          });
-        } else if (child.material instanceof THREE.Material) {
-          child.material.dispose();
-        }
-      }
-    });
-  }, []);
 
   // Cleanup function for Three.js resources
   const cleanupThreeJS = useCallback(() => {

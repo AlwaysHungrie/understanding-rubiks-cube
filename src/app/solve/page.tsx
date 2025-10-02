@@ -1,43 +1,16 @@
 "use client";
 
 import { useCube } from "@/context/cubeContext";
-import { useProgress } from "@/context/progressContext";
-import { FaceMove, INITIAL_CUBE_ROTATION } from "@/lib/constants";
-import { ALGORITHM_CONTENT, AlgorithmContent } from "@/lib/content";
-import { useRouter } from "next/navigation";
-import {
-  use,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
-import { FontLoader } from "three/addons/loaders/FontLoader.js";
-import * as THREE from "three";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import { ALL_CUBE_COORDINATES } from "@/lib/scene/cube";
 import Controls from "@/components/Controls";
 import { MessageActions } from "@/components/common/messageActions";
-import { PrimaryButton } from "@/components/common/primaryButton";
 
 export default function Algorithm() {
   const sceneContainerRef = useRef<HTMLDivElement>(null);
-  const {
-    initScene,
-    initFloor,
-    initCube,
-    moveFace,
-    removeHighlights,
-    reverseMoves,
-    rotateCube,
-    moves,
-  } = useCube();
-  const [currentStep, setCurrentStep] = useState(0);
+  const { initScene, initFloor, initCube } = useCube();
 
   const drawCube = useCallback(async () => {
-    const fontLoader = new FontLoader();
-    const font = await fontLoader.loadAsync("/Oswald_Regular.json");
-
     initCube(ALL_CUBE_COORDINATES);
   }, [initCube]);
 
@@ -54,41 +27,17 @@ export default function Algorithm() {
   return (
     <>
       <div ref={sceneContainerRef} className="relative w-full h-screen"></div>
-      {currentStep !== 1 && <Controls />}
+      <Controls />
+
       <MessageActions
-        message={"Use the algorithms you created"}
+        message={"Solve the cube using the 4 algorithms"}
         pointers={[
-          "Do not move the cube while an algorithm is running",
-          "Try to solve layer by layer",
+          "Solve layer by layer. Top layer can be solved without any algorithms.",
+          "Swap pieces to correct position, then flip them to correct orientation.",
+          "Try not to rotate the cube while applying an algorithm.",
         ]}
         className="ml-auto absolute top-4 right-4"
-        actions={
-          <div className="flex gap-2 flex-col w-full">
-            <PrimaryButton className="gap-2" onClick={async () => {}}>
-              Show Control Panel
-            </PrimaryButton>
-
-            <div className="flex gap-2">
-              <PrimaryButton className="gap-2" onClick={async () => {}}>
-                Move Edges
-              </PrimaryButton>
-
-              <PrimaryButton className="gap-2" onClick={async () => {}}>
-                Flip Edges
-              </PrimaryButton>
-            </div>
-
-            <div className="flex gap-2">
-              <PrimaryButton className="gap-2" onClick={async () => {}}>
-                Move Corners
-              </PrimaryButton>
-
-              <PrimaryButton className="gap-2" onClick={async () => {}}>
-                Flip Corners
-              </PrimaryButton>
-            </div>
-          </div>
-        }
+        actions={<> </>}
       />
     </>
   );

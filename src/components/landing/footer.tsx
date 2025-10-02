@@ -6,12 +6,12 @@ const Footer: React.FC = () => {
       <p>
         Created by{" "}
         <a
-          href="https://twitter.com/your_twitter_handle"
+          href="https://x.com/Always_Hungrie_"
           target="_blank"
           rel="noopener noreferrer"
           className="text-gray-500 hover:text-gray-800 font-semibold transition-colors"
         >
-          @your_twitter_handle
+          @Always_Hungrie_
         </a>
       </p>
     </footer>

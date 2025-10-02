@@ -1,6 +1,6 @@
 import { Heart } from "lucide-react";
 import Image from "next/image";
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 
 const profile = {
   pictureUrl:

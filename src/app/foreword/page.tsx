@@ -14,7 +14,7 @@ const content = [
     id: 0,
     content: [
       "This guide will walk you through all the logical steps to solve the Rubik's Cube all by yourself.",
-      "My main goal is for you to start using logical reasoning in your daily life. And stop relying on others to solve your problems for you.",
+      "Main goal of this guide is for you to start using logical reasoning in your daily life. Stop relying on others to solve your problems for you.",
       "It is easy and something all of us are naturally good at. Don't let anyone tell you otherwise.",
     ],
   },

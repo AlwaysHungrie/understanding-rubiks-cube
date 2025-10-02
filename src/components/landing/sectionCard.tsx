@@ -1,4 +1,4 @@
-import { LockIcon, CheckIcon, ArrowRightIcon, Circle } from "lucide-react";
+import { LockIcon, CheckIcon, ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 

@@ -14,7 +14,6 @@ import {
   useState,
 } from "react";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
-import * as THREE from "three";
 import { ALL_CUBE_COORDINATES } from "@/lib/scene/cube";
 import Controls from "@/components/Controls";
 import { MessageActions } from "@/components/common/messageActions";
@@ -43,20 +42,20 @@ export default function Algorithm({
   const [currentStep, setCurrentStep] = useState(0);
 
   const [extraMoves, setExtraMoves] = useState<FaceMove[]>([]);
-  const [algorithm, setAlgorithm] = useState<string>("");
+  const [, setAlgorithm] = useState<string>("");
   const [algorithmContent, setAlgorithmContent] =
     useState<AlgorithmContent | null>(null);
 
   const content = algorithmContent?.content || [];
   const nextStep = algorithmContent?.nextStep || null;
-  const labels = algorithmContent?.labels || {};
 
   const drawCube = useCallback(async () => {
     const fontLoader = new FontLoader();
     const font = await fontLoader.loadAsync("/Oswald_Regular.json");
 
+    const labels = algorithmContent?.labels || {};
     initCube(ALL_CUBE_COORDINATES, undefined, font, labels);
-  }, [initCube, labels]);
+  }, [initCube, algorithmContent]);
 
   useLayoutEffect(() => {
     if (!algorithmContent) return;
@@ -78,7 +77,7 @@ export default function Algorithm({
     const key = algorithmId as keyof typeof ALGORITHM_CONTENT;
     const content = ALGORITHM_CONTENT[key];
     setAlgorithmContent(content);
-  }, [algorithmId]);
+  }, [algorithmId, router]);
 
   return (
     <>
@@ -138,7 +137,6 @@ export default function Algorithm({
                     router.push("/");
                     if (nextStep) {
                       setCurrentSectionIndex(nextStep);
-                      localStorage.setItem(algorithmId, algorithm);
                     }
                   }
                 }}

@@ -28,7 +28,7 @@ export const checkObjectClick = (
   const intersects = raycaster.intersectObjects(scene.children, true);
 
   // Check if we clicked on a button
-  for (let intersect of intersects) {
+  for (const intersect of intersects) {
     if (
       intersect.object.userData &&
       objectTypes.includes(intersect.object.userData.type)

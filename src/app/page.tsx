@@ -17,7 +17,7 @@ const sectionInfo = [
     link: "/foreword",
     backgroundColor: "#EBB998",
     backgroundImageUrl:
-      "https://unsplash.com/photos/MuB8snLj2xQ/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8Ym84alFLVGFFMFl8fHx8fDJ8fDE3NTc4MDIxNjV8&force=true&w=1920",
+      "https://unsplash.com/photos/gg3UWRI7dYU/download?force=true&w=1920",
   },
   {
     label: "Anatomy of a Rubik's Cube",
@@ -41,7 +41,7 @@ const sectionInfo = [
     link: "/algorithm/flipping-edges",
     backgroundColor: "#BEC0B7",
     backgroundImageUrl:
-      "https://unsplash.com/photos/gg3UWRI7dYU/download?force=true&w=1920",
+      "https://unsplash.com/photos/MuB8snLj2xQ/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8Ym84alFLVGFFMFl8fHx8fDJ8fDE3NTc4MDIxNjV8&force=true&w=1920",
   },
   {
     label: "Moving Corner Pieces",
@@ -75,7 +75,11 @@ export default function Home() {
           </ControlContainer>
 
           <MessageActions
-            message="Finish all the steps of the guide to unlock this action."
+            message={
+              currentSectionIndex < sectionInfo.length - 1
+                ? "Finish all the steps of the guide to unlock this action."
+                : "Congratulations! You can now solve the Rubik's Cube by yourself."
+            }
             className="ml-auto"
             actions={
               <PrimaryButton

@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { COLORS } from "../constants";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 const setupLights = (scene: THREE.Scene) => {
   // Ambient light
